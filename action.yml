@@ -53,8 +53,8 @@ inputs:
     description: "Default user projects"
     required: false
   ORG_PROJECTS:
-    description: "Default organisation projects"
-    required: false
+    description: "Default organization projects"
+    required: true
   IGNORE:
     description: "A collection of comma-delimited regular expression that matches files that should be ignored when searching for TODOs"
     required: false
