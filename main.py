@@ -472,7 +472,7 @@ class TodoParser(object):
                         issue_title = line_title
                     issue = Issue(
                         title=issue_title,
-                        labels=['todo'],
+                        labels=[], # 'todo'
                         assignees=[],
                         milestone=None,
                         user_projects=[],
