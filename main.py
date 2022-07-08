@@ -594,7 +594,8 @@ class TodoParser(object):
         if title_search:
             # if search(exp, comment):
             print("Found Match in %s" % (comment))
-            title = title_search.group(0).strip()
+            matchedTerm = title_search.group(0).strip()
+            title = comment.strip(matchedTerm)
         else:
             print("Did not find Term in title! Initiating secondary search...")
             #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
