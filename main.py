@@ -7,6 +7,7 @@ import re
 import json
 from time import sleep
 from io import StringIO
+from re import search
 from ruamel.yaml import YAML
 from enum import Enum
 import itertools
@@ -580,14 +581,19 @@ class TodoParser(object):
 
     def _get_title(self, comment):
         """Check the passed comment for a new issue title (and reference, if specified)."""
+        exp = 'TODO|BUG|QUESTION|DOCUMENTATION'
         title = None
         ref = None
        # title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
-        title_pattern = re.compile(r'(?:TODO|BUG|QUESTION|DOCUMENTATION)')
+        #title_pattern = re.compile(r'(?:TODO|BUG|QUESTION|DOCUMENTATION)')
+        #title_pattern = re.compile('TODO|BUG|QUESTION|DOCUMENTATION')
         print("Searching for Term in Title with Pattern Provided...")
         print("Search Subject = %s" % (comment))
-        title_search = title_pattern.search(comment, re.IGNORECASE)
+        #title_search = title_pattern.search(comment, re.IGNORECASE)
+        title_search = search(exp, comment)
         if title_search:
+            # if search(exp, comment):
+            print("Found Match in %s" % (comment))
             title = title_search.group(0).strip()
         else:
             print("Did not find Term in title! Initiating secondary search...")
