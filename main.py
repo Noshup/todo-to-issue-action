@@ -584,7 +584,7 @@ class TodoParser(object):
         exp = 'TODO|BUG|QUESTION|DOCUMENTATION'
         title = None
         ref = None
-       # title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
+        #title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
         #title_pattern = re.compile(r'(?:TODO|BUG|QUESTION|DOCUMENTATION)')
         #title_pattern = re.compile('TODO|BUG|QUESTION|DOCUMENTATION')
         print("Searching for Term in Title with Pattern Provided...")
@@ -592,10 +592,12 @@ class TodoParser(object):
         #title_search = title_pattern.search(comment, re.IGNORECASE)
         title_search = search(exp, comment)
         if title_search:
-            # if search(exp, comment):
             print("Found Match in %s" % (comment))
             matchedTerm = title_search.group(0).strip()
             title = comment.strip(matchedTerm)
+            title = title.strip()
+            print("Issue Title = ", title)
+        # Have NOT adjusted this to work properly; supposed to identify assigned individuals in TODO(ind) fmt but cannot be bothered...
         else:
             print("Did not find Term in title! Initiating secondary search...")
             #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
