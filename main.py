@@ -587,7 +587,7 @@ class TodoParser(object):
         else:
             #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
             title_ref_pattern = re.compile(
-                r'(?:TODO|BUG|QUESTION|DOCUMENTATION)' + r'\().+')
+                r'(?:TODO|BUG|QUESTION|DOCUMENTATION)' + r'\(.+')
             title_ref_search = title_ref_pattern.search(comment, re.IGNORECASE)
             if title_ref_search:
                 title = title_ref_search.group(0).strip()
