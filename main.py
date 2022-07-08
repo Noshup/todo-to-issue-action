@@ -78,11 +78,11 @@ class GitHubClient(object):
         elif len(self.commits) == 1:
             # There is only one commit
             diff_url = f'{self.repos_url}{self.repo}/commits/{self.sha}'
-        else: 
+        else:
             # There are several commits: compare with the oldest one
             oldest = sorted(self.commits, key=self.get_timestamp)[0]['id']
-            diff_url = f'{self.repos_url}{self.repo}/compare/{oldest}...{self.sha}'    
-        
+            diff_url = f'{self.repos_url}{self.repo}/compare/{oldest}...{self.sha}'
+
         diff_headers = {
             'Accept': 'application/vnd.github.v3.diff',
             'Authorization': f'token {self.token}'
@@ -100,7 +100,8 @@ class GitHubClient(object):
             'state': 'open',
             'labels': 'todo'
         }
-        list_issues_request = requests.get(self.issues_url, headers=self.issue_headers, params=params)
+        list_issues_request = requests.get(
+            self.issues_url, headers=self.issue_headers, params=params)
         if list_issues_request.status_code == 200:
             self.existing_issues.extend(list_issues_request.json())
             links = list_issues_request.links
@@ -135,7 +136,8 @@ class GitHubClient(object):
                 print(f'Skipping issue (already exists).')
                 return
 
-        new_issue_body = {'title': title, 'body': issue_contents, 'labels': issue.labels}
+        new_issue_body = {'title': title,
+                          'body': issue_contents, 'labels': issue.labels}
 
         # We need to check if any assignees/milestone specified exist, otherwise issue creation will fail.
         valid_assignees = []
@@ -143,20 +145,24 @@ class GitHubClient(object):
             valid_assignees.append(self.actor)
         for assignee in issue.assignees:
             assignee_url = f'{self.repos_url}{self.repo}/assignees/{assignee}'
-            assignee_request = requests.get(url=assignee_url, headers=self.issue_headers)
+            assignee_request = requests.get(
+                url=assignee_url, headers=self.issue_headers)
             if assignee_request.status_code == 204:
                 valid_assignees.append(assignee)
             else:
-                print(f'Assignee {assignee} does not exist! Dropping this assignee!')
+                print(
+                    f'Assignee {assignee} does not exist! Dropping this assignee!')
         new_issue_body['assignees'] = valid_assignees
 
         if issue.milestone:
             milestone_url = f'{self.repos_url}{self.repo}/milestones/{issue.milestone}'
-            milestone_request = requests.get(url=milestone_url, headers=self.issue_headers)
+            milestone_request = requests.get(
+                url=milestone_url, headers=self.issue_headers)
             if milestone_request.status_code == 200:
                 new_issue_body['milestone'] = issue.milestone
             else:
-                print(f'Milestone {issue.milestone} does not exist! Dropping this parameter!')
+                print(
+                    f'Milestone {issue.milestone} does not exist! Dropping this parameter!')
 
         new_issue_request = requests.post(url=self.issues_url, headers=self.issue_headers,
                                           data=json.dumps(new_issue_body))
@@ -167,7 +173,8 @@ class GitHubClient(object):
             issue_id = issue_json['id']
 
             if len(issue.user_projects) > 0:
-                self.add_issue_to_projects(issue_id, issue.user_projects, 'user')
+                self.add_issue_to_projects(
+                    issue_id, issue.user_projects, 'user')
             if len(issue.org_projects) > 0:
                 self.add_issue_to_projects(issue_id, issue.org_projects, 'org')
 
@@ -190,7 +197,8 @@ class GitHubClient(object):
             # The titles match, so we will try and close the issue.
             update_issue_url = f'{self.repos_url}{self.repo}/issues/{issue_number}'
             body = {'state': 'closed'}
-            requests.patch(update_issue_url, headers=self.issue_headers, data=json.dumps(body))
+            requests.patch(update_issue_url,
+                           headers=self.issue_headers, data=json.dumps(body))
 
             issue_comment_url = f'{self.repos_url}{self.repo}/issues/{issue_number}/comments'
             body = {'body': f'Closed in {self.sha}'}
@@ -212,7 +220,8 @@ class GitHubClient(object):
 
         # Loop through all the projects that we should assign this issue to.
         for i, project in enumerate(projects):
-            print(f'Adding issue to {projects_type} project {i + 1} of {len(projects)}')
+            print(
+                f'Adding issue to {projects_type} project {i + 1} of {len(projects)}')
             project = project.replace(' / ', '/')
             try:
                 entity_name, project_name, column_name = project.split('/')
@@ -231,7 +240,8 @@ class GitHubClient(object):
                 return
 
             # We need to use the project name to get its ID.
-            projects_request = requests.get(url=projects_url, headers=projects_headers)
+            projects_request = requests.get(
+                url=projects_url, headers=projects_headers)
             if projects_request.status_code == 200:
                 projects_json = projects_request.json()
                 for project_dict in projects_json:
@@ -247,7 +257,8 @@ class GitHubClient(object):
 
             # Use the project ID and column name to get the column ID.
             columns_url = f'{self.base_url}projects/{project_id}/columns'
-            columns_request = requests.get(url=columns_url, headers=projects_headers)
+            columns_request = requests.get(
+                url=columns_url, headers=projects_headers)
             if columns_request.status_code == 200:
                 columns_json = columns_request.json()
                 for column_dict in columns_json:
@@ -294,7 +305,8 @@ class TodoParser(object):
 
     def __init__(self):
         # We could support more identifiers later quite easily.
-        self.identifier = 'TODO'
+        self.identifier = ['TODO', 'BUG', 'QUESTION', 'DOCUMENTATION']
+        #self.identifier = '(?:TODO|BUG|QUESTION|DOCUMENTATION)'
         self.languages_dict = None
 
         # Load the languages data for ascertaining file types.
@@ -305,7 +317,8 @@ class TodoParser(object):
             yaml = YAML(typ='safe')
             self.languages_dict = yaml.load(languages_data)
         else:
-            raise Exception('Cannot retrieve languages data. Operation will abort.')
+            raise Exception(
+                'Cannot retrieve languages data. Operation will abort.')
 
         # Load the comment syntax data for identifying comments.
         syntax_url = 'https://raw.githubusercontent.com/alstr/todo-to-issue-action/master/syntax.json'
@@ -313,7 +326,8 @@ class TodoParser(object):
         if syntax_request.status_code == 200:
             self.syntax_dict = syntax_request.json()
         else:
-            raise Exception('Cannot retrieve syntax data. Operation will abort.')
+            raise Exception(
+                'Cannot retrieve syntax data. Operation will abort.')
 
     # noinspection PyTypeChecker
     def parse(self, diff_file):
@@ -323,7 +337,8 @@ class TodoParser(object):
         # At each level relevant information is extracted.
 
         # First separate the diff into sections for each changed file.
-        file_hunks = re.finditer(self.FILE_HUNK_PATTERN, diff_file.read(), re.DOTALL)
+        file_hunks = re.finditer(
+            self.FILE_HUNK_PATTERN, diff_file.read(), re.DOTALL)
         last_end = None
         extracted_file_hunks = []
         for i, file_hunk in enumerate(file_hunks):
@@ -349,16 +364,20 @@ class TodoParser(object):
             curr_file = filename_search.group(0)
             if self._should_ignore(curr_file):
                 continue
-            curr_markers, curr_markdown_language = self._get_file_details(curr_file)
+            curr_markers, curr_markdown_language = self._get_file_details(
+                curr_file)
             if not curr_markers or not curr_markdown_language:
-                print(f'Could not check {curr_file} for TODOs as this language is not yet supported by default.')
+                print(
+                    f'Could not check {curr_file} for TODOs as this language is not yet supported by default.')
                 continue
 
             # Break this section down into individual changed code blocks.
             line_numbers = re.finditer(self.LINE_NUMBERS_PATTERN, hunk)
             for i, line_numbers in enumerate(line_numbers):
-                line_numbers_inner_search = re.search(self.LINE_NUMBERS_INNER_PATTERN, line_numbers.group(0))
-                line_numbers_str = line_numbers_inner_search.group(0).strip('@@ -')
+                line_numbers_inner_search = re.search(
+                    self.LINE_NUMBERS_INNER_PATTERN, line_numbers.group(0))
+                line_numbers_str = line_numbers_inner_search.group(
+                    0).strip('@@ -')
                 start_line = line_numbers_str.split(' ')[1].strip('+')
                 start_line = int(start_line.split(',')[0])
 
@@ -395,32 +414,40 @@ class TodoParser(object):
             for marker in block['markers']:
                 # Check if there are line or block comments.
                 if marker['type'] == 'line':
-                    comment_pattern = r'(^[+\-\s].*' + marker['pattern'] + r'\s.+$)'
-                    comments = re.finditer(comment_pattern, block['hunk'], re.MULTILINE)
+                    comment_pattern = r'(^[+\-\s].*' + \
+                        marker['pattern'] + r'\s.+$)'
+                    comments = re.finditer(
+                        comment_pattern, block['hunk'], re.MULTILINE)
                     extracted_comments = []
                     prev_comment = None
                     for i, comment in enumerate(comments):
-                        if i == 0 or self.identifier in comment.group(0):
+                        if i == 0 or any(x in comment.group(0) for x in self.identifier):
+                            # if i == 0 or self.identifier in comment.group(0):
                             extracted_comments.append([comment])
                         else:
                             if comment.start() == prev_comment.end() + 1:
-                                extracted_comments[len(extracted_comments) - 1].append(comment)
+                                extracted_comments[len(
+                                    extracted_comments) - 1].append(comment)
                         prev_comment = comment
                     for comment in extracted_comments:
-                        issue = self._extract_issue_if_exists(comment, marker, block)
+                        issue = self._extract_issue_if_exists(
+                            comment, marker, block)
                         if issue:
                             issues.append(issue)
                 else:
                     comment_pattern = (r'(?:[+\-\s]\s*' + marker['pattern']['start'] + r'.*?'
                                        + marker['pattern']['end'] + ')')
-                    comments = re.finditer(comment_pattern, block['hunk'], re.DOTALL)
+                    comments = re.finditer(
+                        comment_pattern, block['hunk'], re.DOTALL)
                     extracted_comments = []
                     for i, comment in enumerate(comments):
-                        if self.identifier in comment.group(0):
+                        # if self.identifier in comment.group(0):
+                        if any(x in comment.group(0) for x in self.identifier):
                             extracted_comments.append([comment])
 
                     for comment in extracted_comments:
-                        issue = self._extract_issue_if_exists(comment, marker, block)
+                        issue = self._extract_issue_if_exists(
+                            comment, marker, block)
                         if issue:
                             issues.append(issue)
 
@@ -433,15 +460,18 @@ class TodoParser(object):
             # Strip leading symbols/whitespace.
             cleaned_hunk = re.sub(r'^.', '', cleaned_hunk, 0, re.MULTILINE)
             # Strip newline message.
-            cleaned_hunk = re.sub(r'\n\sNo newline at end of file', '', cleaned_hunk, 0, re.MULTILINE)
+            cleaned_hunk = re.sub(
+                r'\n\sNo newline at end of file', '', cleaned_hunk, 0, re.MULTILINE)
             issue.hunk = cleaned_hunk
 
             # If no projects have been specified for this issue, assign any default projects that exist.
             if len(issue.user_projects) == 0 and default_user_projects is not None:
-                separated_user_projects = self._get_projects(f'user projects: {default_user_projects}', 'user')
+                separated_user_projects = self._get_projects(
+                    f'user projects: {default_user_projects}', 'user')
                 issue.user_projects = separated_user_projects
             if len(issue.org_projects) == 0 and default_org_projects is not None:
-                separated_org_projects = self._get_projects(f'org projects: {default_org_projects}', 'org')
+                separated_org_projects = self._get_projects(
+                    f'org projects: {default_org_projects}', 'org')
                 issue.org_projects = separated_org_projects
         return issues
 
@@ -472,7 +502,7 @@ class TodoParser(object):
                         issue_title = line_title
                     issue = Issue(
                         title=issue_title,
-                        labels=[], # 'todo'
+                        labels=[],  # 'todo'
                         assignees=[],
                         milestone=None,
                         user_projects=[],
@@ -486,7 +516,8 @@ class TodoParser(object):
                     )
 
                     # Calculate the file line number that this issue references.
-                    hunk_lines = re.finditer(self.LINE_PATTERN, code_block['hunk'], re.MULTILINE)
+                    hunk_lines = re.finditer(
+                        self.LINE_PATTERN, code_block['hunk'], re.MULTILINE)
                     start_line = code_block['start_line']
                     for i, hunk_line in enumerate(hunk_lines):
                         if hunk_line.group(0) == line:
@@ -548,12 +579,15 @@ class TodoParser(object):
         """Check the passed comment for a new issue title (and reference, if specified)."""
         title = None
         ref = None
-        title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
+       # title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
+        title_pattern = re.compile(r'(?:TODO|BUG|QUESTION|DOCUMENTATION)')
         title_search = title_pattern.search(comment, re.IGNORECASE)
         if title_search:
             title = title_search.group(0).strip()
         else:
-            title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
+            #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
+            title_ref_pattern = re.compile(
+                r'(?:TODO|BUG|QUESTION|DOCUMENTATION)' + r'\().+')
             title_ref_search = title_ref_pattern.search(comment, re.IGNORECASE)
             if title_ref_search:
                 title = title_ref_search.group(0).strip()
@@ -574,7 +608,8 @@ class TodoParser(object):
 
     def _get_assignees(self, comment):
         """Check the passed comment for issue assignees."""
-        assignees_search = self.ASSIGNEES_PATTERN.search(comment, re.IGNORECASE)
+        assignees_search = self.ASSIGNEES_PATTERN.search(
+            comment, re.IGNORECASE)
         assignees = []
         if assignees_search:
             assignees = assignees_search.group(0).replace(', ', ',')
@@ -583,7 +618,8 @@ class TodoParser(object):
 
     def _get_milestone(self, comment):
         """Check the passed comment for a milestone."""
-        milestone_search = self.MILESTONE_PATTERN.search(comment, re.IGNORECASE)
+        milestone_search = self.MILESTONE_PATTERN.search(
+            comment, re.IGNORECASE)
         milestone = None
         if milestone_search:
             milestone = milestone_search.group(0)
@@ -595,9 +631,11 @@ class TodoParser(object):
         """Check the passed comment for projects to link the issue to."""
         projects = []
         if projects_type == 'user':
-            projects_search = self.USER_PROJECTS_PATTERN.search(comment, re.IGNORECASE)
+            projects_search = self.USER_PROJECTS_PATTERN.search(
+                comment, re.IGNORECASE)
         elif projects_type == 'org':
-            projects_search = self.ORG_PROJECTS_PATTERN.search(comment, re.IGNORECASE)
+            projects_search = self.ORG_PROJECTS_PATTERN.search(
+                comment, re.IGNORECASE)
         else:
             return projects
         if projects_search:
