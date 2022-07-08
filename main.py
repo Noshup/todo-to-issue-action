@@ -422,9 +422,12 @@ class TodoParser(object):
                     prev_comment = None
                     for i, comment in enumerate(comments):
                         if i == 0 or any(x in comment.group(0) for x in self.identifier):
+                            print("Identified tag in %s" % (comment.group(0)))
                             # if i == 0 or self.identifier in comment.group(0):
                             extracted_comments.append([comment])
                         else:
+                            print("Could not Identify tag in %s" %
+                                  (comment.group(0)))
                             if comment.start() == prev_comment.end() + 1:
                                 extracted_comments[len(
                                     extracted_comments) - 1].append(comment)
@@ -581,13 +584,16 @@ class TodoParser(object):
         ref = None
        # title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
         title_pattern = re.compile(r'(?:TODO|BUG|QUESTION|DOCUMENTATION)')
+        print("Searching for Term in Title with Pattern Provided...")
+        print("Search Subject = %s" % (comment))
         title_search = title_pattern.search(comment, re.IGNORECASE)
         if title_search:
             title = title_search.group(0).strip()
         else:
+            print("Did not find Term in title! Initiating secondary search...")
             #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
             title_ref_pattern = re.compile(
-                r'(?:TODO|BUG|QUESTION|DOCUMENTATION)' + r'\(.+')
+                r'(?:TODO|BUG|QUESTION|DOCUMENTATION)\(.+')
             title_ref_search = title_ref_pattern.search(comment, re.IGNORECASE)
             if title_ref_search:
                 title = title_ref_search.group(0).strip()
