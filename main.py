@@ -306,7 +306,8 @@ class TodoParser(object):
 
     def __init__(self):
         # We could support more identifiers later quite easily.
-        self.identifier = ['TODO', 'BUG', 'QUESTION', 'DOCUMENTATION']
+        self.identifier = ['TODO', 'BUG', 'QUESTION',
+                           'DOCUMENTATION', 'ENHANCEMENT']
         #self.identifier = '(?:TODO|BUG|QUESTION|DOCUMENTATION)'
         self.languages_dict = None
 
@@ -581,7 +582,7 @@ class TodoParser(object):
 
     def _get_title(self, comment):
         """Check the passed comment for a new issue title (and reference, if specified)."""
-        exp = 'TODO|BUG|QUESTION|DOCUMENTATION'
+        exp = 'TODO|BUG|QUESTION|DOCUMENTATION|ENHANCEMENT'
         title = None
         ref = None
         #title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
