@@ -701,7 +701,7 @@ if __name__ == "__main__":
                 else:
                     print('Issue could not be created')
             elif raw_issue.status == LineStatus.DELETED and os.getenv('INPUT_CLOSE_ISSUES', 'true') == 'true':
-                print('Attempting to close issue = ', raw_issue)
+                print('Attempting to close issue = ', raw_issue.toString())
                 status_code = client.close_issue(raw_issue)
                 if status_code == 201:
                     print('Issue closed')
