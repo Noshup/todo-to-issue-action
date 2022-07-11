@@ -62,6 +62,8 @@ class GitHubClient(object):
         self.line_break = '\n\n' if auto_p else '\n'
         # Retrieve the existing repo issues now so we can easily check them later.
         self._get_existing_issues()
+        print("Number of Issues Found = ", self.existing_issues.__len__)
+        print("Existing Issues Found = ", self.existing_issues['number'])
         self.auto_assign = os.getenv('INPUT_AUTO_ASSIGN', 'false') == 'true'
         self.actor = os.getenv('INPUT_ACTOR')
 
@@ -188,6 +190,8 @@ class GitHubClient(object):
         for existing_issue in self.existing_issues:
             # This is admittedly a simple check that may not work in complex scenarios, but we can't deal with them yet.
             if existing_issue['title'] == issue.title:
+                print("Found Existing issue with title: ",
+                      existing_issue['title'], " Which has issue Number = ", existing_issue['number'])
                 matched += 1
                 # If there are multiple issues with similar titles, don't try and close any.
                 if matched > 1:
@@ -701,7 +705,7 @@ if __name__ == "__main__":
                 else:
                     print('Issue could not be created')
             elif raw_issue.status == LineStatus.DELETED and os.getenv('INPUT_CLOSE_ISSUES', 'true') == 'true':
-                print('Attempting to close issue = ', raw_issue.toString())
+                print('Attempting to close issue = ', raw_issue.title)
                 status_code = client.close_issue(raw_issue)
                 if status_code == 201:
                     print('Issue closed')
