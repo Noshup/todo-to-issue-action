@@ -109,6 +109,8 @@ class GitHubClient(object):
             links = list_issues_request.links
             if 'next' in links:
                 self._get_existing_issues(page + 1)
+        print("Get Existing Issues Request Has Return Code = ",
+              list_issues_request.status_code, " With Body: ", list_issues_request.text)
 
     def create_issue(self, issue):
         """Create a dict containing the issue details and send it to GitHub."""
