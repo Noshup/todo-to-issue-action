@@ -669,7 +669,7 @@ class TodoParser(object):
 
 
 if __name__ == "__main__":
-    # Create a basic client for communicating with GitHub, automatically initialised with environment variables.
+    # Create a basic client for communicating with GitHub, automatically initialized with environment variables.
     client = GitHubClient()
     if client.diff_url or len(client.commits) != 0:
         # Get the diff from the last pushed commit.
@@ -701,10 +701,11 @@ if __name__ == "__main__":
                 else:
                     print('Issue could not be created')
             elif raw_issue.status == LineStatus.DELETED and os.getenv('INPUT_CLOSE_ISSUES', 'true') == 'true':
+                print('Attempting to close issue = ', raw_issue)
                 status_code = client.close_issue(raw_issue)
                 if status_code == 201:
                     print('Issue closed')
                 else:
-                    print('Issue could not be closed')
+                    print('Issue could not be closed: ', status_code)
             # Stagger the requests to be on the safe side.
             sleep(1)
