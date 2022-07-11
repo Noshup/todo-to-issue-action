@@ -62,7 +62,8 @@ class GitHubClient(object):
         self.line_break = '\n\n' if auto_p else '\n'
         # Retrieve the existing repo issues now so we can easily check them later.
         self._get_existing_issues()
-        print("Number of Issues Found = ", str(len(self.existing_issues)))
+        print("GitHubClient->init: Number of Issues Found = ",
+              str(len(self.existing_issues)))
         self.auto_assign = os.getenv('INPUT_AUTO_ASSIGN', 'false') == 'true'
         self.actor = os.getenv('INPUT_ACTOR')
 
@@ -102,6 +103,7 @@ class GitHubClient(object):
             'state': 'open',
             'labels': 'todo'
         }
+        print("get_existing_issues: URL to send request to = ", self.issues_url)
         list_issues_request = requests.get(
             self.issues_url, headers=self.issue_headers, params=params)
         if list_issues_request.status_code == 200:
@@ -109,7 +111,7 @@ class GitHubClient(object):
             links = list_issues_request.links
             if 'next' in links:
                 self._get_existing_issues(page + 1)
-        print("Get Existing Issues Request Has Return Code = ",
+        print("get_existing_issues: Request Has Return Code = ",
               list_issues_request.status_code, " With Body: ", list_issues_request.text)
 
     def create_issue(self, issue):
@@ -188,6 +190,8 @@ class GitHubClient(object):
         """Check to see if this issue can be found on GitHub and if so close it."""
         matched = 0
         issue_number = None
+        print("close_issue: Number of Issues = ",
+              str(len(self.existing_issues)))
         for existing_issue in self.existing_issues:
             # This is admittedly a simple check that may not work in complex scenarios, but we can't deal with them yet.
             if existing_issue['title'] == issue.title:
@@ -429,11 +433,12 @@ class TodoParser(object):
                     prev_comment = None
                     for i, comment in enumerate(comments):
                         if i == 0 or any(x in comment.group(0) for x in self.identifier):
-                            print("Identified tag in %s" % (comment.group(0)))
+                            print("Issue Parser: Identified tag in ",
+                                  comment.group(0))
                             # if i == 0 or self.identifier in comment.group(0):
                             extracted_comments.append([comment])
                         else:
-                            print("Could not Identify tag in %s" %
+                            print("Issue Parser: Could not Identify tag in %s" %
                                   (comment.group(0)))
                             if comment.start() == prev_comment.end() + 1:
                                 extracted_comments[len(
@@ -593,19 +598,21 @@ class TodoParser(object):
         #title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
         #title_pattern = re.compile(r'(?:TODO|BUG|QUESTION|DOCUMENTATION)')
         #title_pattern = re.compile('TODO|BUG|QUESTION|DOCUMENTATION')
-        print("Searching for Term in Title with Pattern Provided...")
-        print("Search Subject = %s" % (comment))
+        print(
+            "Issue Parser->get_title: Searching for Term in Title with Pattern Provided...")
+        print("Issue Parser->get_title: Search Subject = %s" % (comment))
         #title_search = title_pattern.search(comment, re.IGNORECASE)
         title_search = search(exp, comment)
         if title_search:
-            print("Found Match in %s" % (comment))
+            print("Issue Parser->get_title: Found Match in %s" % (comment))
             matchedTerm = title_search.group(0).strip()
             title = comment.strip(matchedTerm)
             title = title.strip()
-            print("Issue Title = ", title)
+            print("Issue Parser->get_title: Issue Title = ", title)
         # Have NOT adjusted this to work properly; supposed to identify assigned individuals in TODO(ind) fmt but cannot be bothered...
         else:
-            print("Did not find Term in title! Initiating secondary search...")
+            print(
+                "Issue Parser->get_title: Did not find Term in title! Initiating secondary search...")
             #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
             title_ref_pattern = re.compile(
                 r'(?:TODO|BUG|QUESTION|DOCUMENTATION)\(.+')
