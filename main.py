@@ -62,8 +62,7 @@ class GitHubClient(object):
         self.line_break = '\n\n' if auto_p else '\n'
         # Retrieve the existing repo issues now so we can easily check them later.
         self._get_existing_issues()
-        print("Number of Issues Found = ", self.existing_issues.__len__)
-        print("Existing Issues Found = ", self.existing_issues['number'])
+        print("Number of Issues Found = ", str(len(self.existing_issues)))
         self.auto_assign = os.getenv('INPUT_AUTO_ASSIGN', 'false') == 'true'
         self.actor = os.getenv('INPUT_ACTOR')
 
