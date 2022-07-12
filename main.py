@@ -101,7 +101,6 @@ class GitHubClient(object):
             'per_page': 100,
             'page': page,
             'state': 'open',
-            # 'labels': 'todo'
         }
         print("get_existing_issues: URL to send request to = ", self.issues_url)
         list_issues_request = requests.get(
@@ -593,13 +592,9 @@ class TodoParser(object):
         exp = 'TODO|BUG|QUESTION|DOCUMENTATION|ENHANCEMENT'
         title = None
         ref = None
-        #title_pattern = re.compile(r'(?<=' + self.identifier + r'[\s:]).+')
-        #title_pattern = re.compile(r'(?:TODO|BUG|QUESTION|DOCUMENTATION)')
-        #title_pattern = re.compile('TODO|BUG|QUESTION|DOCUMENTATION')
         print(
             "Issue Parser->get_title: Searching for Term in Title with Pattern Provided...")
         print("Issue Parser->get_title: Search Subject = %s" % (comment))
-        #title_search = title_pattern.search(comment, re.IGNORECASE)
         title_search = search(exp, comment)
         if title_search:
             print("Issue Parser->get_title: Found Match in %s" % (comment))
