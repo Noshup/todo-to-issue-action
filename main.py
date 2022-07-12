@@ -112,7 +112,7 @@ class GitHubClient(object):
             if 'next' in links:
                 self._get_existing_issues(page + 1)
         print("get_existing_issues: Request Has Return Code = ",
-              list_issues_request.status_code, " With Body: ", list_issues_request.text)
+              list_issues_request.status_code, " With Total Issues = ", str(len(self.existing_issues)))
 
     def create_issue(self, issue):
         """Create a dict containing the issue details and send it to GitHub."""
@@ -190,8 +190,6 @@ class GitHubClient(object):
         """Check to see if this issue can be found on GitHub and if so close it."""
         matched = 0
         issue_number = None
-        print("close_issue: Number of Issues = ",
-              str(len(self.existing_issues)))
         for existing_issue in self.existing_issues:
             # This is admittedly a simple check that may not work in complex scenarios, but we can't deal with them yet.
             if existing_issue['title'] == issue.title:
