@@ -101,7 +101,7 @@ class GitHubClient(object):
             'per_page': 100,
             'page': page,
             'state': 'open',
-            'labels': 'todo,bug,enhancement,question,documentation'
+            # 'labels': 'todo'
         }
         print("get_existing_issues: URL to send request to = ", self.issues_url)
         list_issues_request = requests.get(
