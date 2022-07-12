@@ -548,6 +548,7 @@ class TodoParser(object):
                     line_milestone = self._get_milestone(cleaned_line)
                     user_projects = self._get_projects(cleaned_line, 'user')
                     org_projects = self._get_projects(cleaned_line, 'org')
+                    hunk_lines = self._get_hunk_lines(cleaned_line)
                     if line_labels:
                         issue.labels.extend(line_labels)
                     elif line_assignees:
@@ -653,6 +654,7 @@ class TodoParser(object):
 
     def _get_hunk_lines(self, comment):
         """Check the passed comment for lines to include for code hunk"""
+        print("get_hunk_lines: Search Subject = ", comment)
         lines_search = self.CODE_LINES_PATTERN.search(comment, re.IGNORECASE)
         value = None
         start = None
@@ -661,11 +663,11 @@ class TodoParser(object):
             value = lines_search.groups
             start = lines_search.group(0)
             end = lines_search.group(1)
-            print("Found Lines Value = ", value)
-            print("Group 0 = ", start)
-            print("Group 1 = ", end)
+            print("get_hunk_lines: Found Lines Value = ", value)
+            print("get_hunk_lines: Group 0 = ", start)
+            print("get_hunk_lines: Group 1 = ", end)
         else:
-            print("Could not find Hunk Lines in Comment Line!")
+            print("get_hunk_lines: Could not find Hunk Lines in Comment Line!")
 
         return value
 
