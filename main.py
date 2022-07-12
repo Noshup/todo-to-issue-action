@@ -588,23 +588,23 @@ class TodoParser(object):
                         issue.user_projects.extend(user_projects)
                     elif org_projects:
                         issue.org_projects.extend(org_projects)
-                    elif hunk_lines:
-                        start = int(hunk_lines[0])
-                        end = int(hunk_lines[1])
-                        print("_extract_new_issue: Start Line = ", start)
-                        print("_extract_new_issue: End Line = ", end)
-                        new_block = GitHubClient._get_code_blob(client,
-                                                                file, start, end, marker, markdown)
-                        if new_block:
-                            print(
-                                "_extract_issue: Adding new Block Details to Issue Object...")
-                            issue.hunk = new_block['hunk']
-                            issue.file_name = new_block['file']
-                            issue.start_line = new_block['start_line']
-                            issue.markdown_language = new_block['markdown_language']
-                        else:
-                            print(
-                                "_extract_issue: Failed to retrieve new Block!")
+                   # elif hunk_lines:
+                   #     start = int(hunk_lines[0])
+                   #     end = int(hunk_lines[1])
+                   #     print("_extract_new_issue: Start Line = ", start)
+                   #     print("_extract_new_issue: End Line = ", end)
+                   #     new_block = GitHubClient._get_code_blob(client,
+                   #                                             file, start, end, marker, markdown)
+                   #     if new_block:
+                   #         print(
+                   #             "_extract_issue: Adding new Block Details to Issue Object...")
+                   #         issue.hunk = new_block['hunk']
+                   #         issue.file_name = new_block['file']
+                   #         issue.start_line = new_block['start_line']
+                   #         issue.markdown_language = new_block['markdown_language']
+                   #     else:
+                   #         print(
+                   #             "_extract_issue: Failed to retrieve new Block!")
 
                     elif len(cleaned_line):
                         issue.body.append(cleaned_line)
