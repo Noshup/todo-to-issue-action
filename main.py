@@ -417,7 +417,7 @@ class TodoParser(object):
             last_block = code_blocks[last_index]
             code_blocks[last_index]['hunk'] = last_block['hunk'][last_block['hunk_start']:]
 
-        # Now for each code block, check for comments, then those comments for TODOs.
+        # Now for each code block, check for comments, then those comments for Tags.
         for block in code_blocks:
             for marker in block['markers']:
                 # Check if there are line or block comments.
@@ -432,7 +432,6 @@ class TodoParser(object):
                         if i == 0 or any(x in comment.group(0) for x in self.identifier):
                             print("Issue Parser: Identified tag in ",
                                   comment.group(0))
-                            # if i == 0 or self.identifier in comment.group(0):
                             extracted_comments.append([comment])
                         else:
                             print("Issue Parser: Could not Identify tag in %s" %
@@ -453,7 +452,6 @@ class TodoParser(object):
                         comment_pattern, block['hunk'], re.DOTALL)
                     extracted_comments = []
                     for i, comment in enumerate(comments):
-                        # if self.identifier in comment.group(0):
                         if any(x in comment.group(0) for x in self.identifier):
                             extracted_comments.append([comment])
 
@@ -512,6 +510,10 @@ class TodoParser(object):
                         issue_title = f'[{ref}] {line_title}'
                     else:
                         issue_title = line_title
+
+                    issueHunk = code_block['hunk']
+                    print("extract_issue: hunkStart = ",
+                          issueHunk['hunk_start'], " hunkEnd = ", issueHunk['hunk_end'])
                     issue = Issue(
                         title=issue_title,
                         labels=[],  # 'todo'
