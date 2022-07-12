@@ -511,7 +511,7 @@ class TodoParser(object):
                         issue_title = f'[{ref}] {line_title}'
                     else:
                         issue_title = line_title
-
+                    lines = self._get_hunk_lines(cleaned_line)
                     issueHunk = code_block['hunk']
                     print("extract_issue: hunk = ", issueHunk)
                     issue = Issue(
@@ -547,7 +547,6 @@ class TodoParser(object):
                     line_milestone = self._get_milestone(cleaned_line)
                     user_projects = self._get_projects(cleaned_line, 'user')
                     org_projects = self._get_projects(cleaned_line, 'org')
-                    lines = self._get_hunk_lines(cleaned_line)
                     if line_labels:
                         issue.labels.extend(line_labels)
                     elif line_assignees:
