@@ -101,7 +101,7 @@ class GitHubClient(object):
             'per_page': 100,
             'page': page,
             'state': 'open',
-            'labels': 'todo'
+            'labels': 'todo,bug,enhancement,question,documentation'
         }
         print("get_existing_issues: URL to send request to = ", self.issues_url)
         list_issues_request = requests.get(
@@ -709,15 +709,15 @@ if __name__ == "__main__":
             if raw_issue.status == LineStatus.ADDED:
                 status_code = client.create_issue(raw_issue)
                 if status_code == 201:
-                    print('Issue created')
+                    print('main: Issue created')
                 else:
-                    print('Issue could not be created')
+                    print('main: Issue could not be created')
             elif raw_issue.status == LineStatus.DELETED and os.getenv('INPUT_CLOSE_ISSUES', 'true') == 'true':
-                print('Attempting to close issue = ', raw_issue.title)
+                print('main: Attempting to close issue = ', raw_issue.title)
                 status_code = client.close_issue(raw_issue)
                 if status_code == 201:
-                    print('Issue closed')
+                    print('main: Issue closed')
                 else:
-                    print('Issue could not be closed: ', status_code)
+                    print('main: Issue could not be closed: ', status_code)
             # Stagger the requests to be on the safe side.
             sleep(1)
