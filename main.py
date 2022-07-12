@@ -13,6 +13,7 @@ from ruamel.yaml import YAML
 from enum import Enum
 import itertools
 import operator
+import base64
 
 
 class LineStatus(Enum):
@@ -113,6 +114,34 @@ class GitHubClient(object):
                 self._get_existing_issues(page + 1)
         print("get_existing_issues: Request Has Return Code = ",
               list_issues_request.status_code, " With Total Issues = ", str(len(self.existing_issues)))
+
+    def _get_code_blob(self, file_path, start, end, curr_markers, curr_markdown_language):
+        file_url = f'{self.repos_url}{self.repo}/contents/{file_path}'
+        file_64 = None
+        file = None
+        block = None
+        file_blob_request = requests.get(file_url, headers=self.issue_headers)
+        if file_blob_request.status_code == 200:
+            file_64 = file_blob_request.content
+            content_by_line = file_64.split('\n')
+            target = ""
+            for x in range(start, end):
+                target += content_by_line[x]+'\n'
+            file = base64.b64decode(target)
+            block = {
+                'file': file_path,
+                'markers': curr_markers,
+                'markdown_language': curr_markdown_language,
+                'start_line': start,
+                'hunk': file,
+                'hunk_start': None,
+                'hunk_end': None
+            }
+            print("_get_code_blob: Success!")
+        else:
+            print("_get_code_blob: Something went wrong!")
+
+        return block
 
     def create_issue(self, issue):
         """Create a dict containing the issue details and send it to GitHub."""
@@ -445,7 +474,7 @@ class TodoParser(object):
                         prev_comment = comment
                     for comment in extracted_comments:
                         issue = self._extract_issue_if_exists(
-                            comment, marker, block)
+                            comment, marker, block, curr_markdown_language, curr_file)
                         if issue:
                             issues.append(issue)
                 else:
@@ -460,7 +489,7 @@ class TodoParser(object):
 
                     for comment in extracted_comments:
                         issue = self._extract_issue_if_exists(
-                            comment, marker, block)
+                            comment, marker, block, curr_markdown_language, curr_file)
                         if issue:
                             issues.append(issue)
 
@@ -499,7 +528,7 @@ class TodoParser(object):
                         return syntax_details['markers'], self.languages_dict[language_name]['ace_mode']
         return None, None
 
-    def _extract_issue_if_exists(self, comment, marker, code_block):
+    def _extract_issue_if_exists(self, comment, marker, code_block, markdown, file):
         """Check this comment for Tags, and if found, build an Issue object."""
         issue = None
         for match in comment:
@@ -548,6 +577,7 @@ class TodoParser(object):
                     line_milestone = self._get_milestone(cleaned_line)
                     user_projects = self._get_projects(cleaned_line, 'user')
                     org_projects = self._get_projects(cleaned_line, 'org')
+                    hunk_lines = self._get_hunk_lines(cleaned_line)
                     if line_labels:
                         issue.labels.extend(line_labels)
                     elif line_assignees:
@@ -558,6 +588,24 @@ class TodoParser(object):
                         issue.user_projects.extend(user_projects)
                     elif org_projects:
                         issue.org_projects.extend(org_projects)
+                    elif hunk_lines:
+                        start = int(hunk_lines[0])
+                        end = int(hunk_lines[1])
+                        print("_extract_new_issue: Start Line = ", start)
+                        print("_extract_new_issue: End Line = ", end)
+                        new_block = GitHubClient._get_code_blob(
+                            file, start, end, marker, markdown)
+                        if new_block:
+                            print(
+                                "_extract_issue: Adding new Block Details to Issue Object...")
+                            issue.hunk = new_block['hunk']
+                            issue.file_name = new_block['file']
+                            issue.start_line = new_block['start_line']
+                            issue.markdown_language = new_block['markdown_language']
+                        else:
+                            print(
+                                "_extract_issue: Failed to retrieve new Block!")
+
                     elif len(cleaned_line):
                         issue.body.append(cleaned_line)
 
