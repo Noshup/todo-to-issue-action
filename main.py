@@ -473,11 +473,11 @@ class TodoParser(object):
                         hunk_lines = self._get_hunk_lines
                         print("parse: Hunk Lines = ", hunk_lines)
                         print("parse: Current Hunk Start = ",
-                              block.hunk['hunk_start'])
+                              block['hunk_start'])
                         print("parse: Current Hunk End = ",
-                              block.hunk['hunk_end'])
-                        block.hunk['hunk_start'] = hunk_lines[0]
-                        block.hunk['hunk_end'] = hunk_lines[1]
+                              block['hunk_end'])
+                        block['hunk_start'] = hunk_lines[0]
+                        block['hunk_end'] = hunk_lines[1]
                         issue = self._extract_issue_if_exists(
                             comment, marker, block)
                         if issue:
@@ -567,7 +567,7 @@ class TodoParser(object):
                     line_milestone = self._get_milestone(cleaned_line)
                     user_projects = self._get_projects(cleaned_line, 'user')
                     org_projects = self._get_projects(cleaned_line, 'org')
-                    hunk_lines = self._get_hunk_lines(cleaned_line)
+                   # hunk_lines = self._get_hunk_lines(cleaned_line)
                     if line_labels:
                         issue.labels.extend(line_labels)
                     elif line_assignees:
