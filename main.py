@@ -662,10 +662,9 @@ class TodoParser(object):
         if lines_search:
             value = lines_search.groups
             start = lines_search.group(0)
-            end = lines_search.group(1)
-            print("get_hunk_lines: Found Lines Value = ", value)
+            #end = lines_search.group(1)
+            print("get_hunk_lines: Found Lines Value (all groups) = ", value)
             print("get_hunk_lines: Group 0 = ", start)
-            print("get_hunk_lines: Group 1 = ", end)
         else:
             print("get_hunk_lines: Could not find Hunk Lines in Comment Line!")
 
