@@ -2,6 +2,7 @@
 """Convert IDE TODOs to GitHub issues."""
 
 import os
+from xml.etree.ElementTree import Comment
 import requests
 import re
 import json
@@ -420,6 +421,7 @@ class TodoParser(object):
 
         # Now for each code block, check for comments, then those comments for Tags.
         for block in code_blocks:
+            print("Code Block Identified = ", block)
             for marker in block['markers']:
                 # Check if there are line or block comments.
                 if marker['type'] == 'line':
@@ -442,14 +444,15 @@ class TodoParser(object):
                                     extracted_comments) - 1].append(comment)
                         prev_comment = comment
                     for comment in extracted_comments:
-                        hunk_lines = self._get_hunk_lines
-                        print("parse: Hunk Lines = ", hunk_lines)
-                        print(
-                            "extract_issue_if_exists: Current Hunk Start = ", block.hunk['hunk_start'])
-                        print("extract_issue_if_exists: Current Hunk End = ",
-                              block.hunk['hunk_end'])
-                        block.hunk['hunk_start'] = hunk_lines[0]
-                        block.hunk['hunk_end'] = hunk_lines[1]
+                       # print("parse: Comment = ", comment)
+                       # hunk_lines = self._get_hunk_lines
+                       # print("parse: Hunk Lines = ", hunk_lines)
+                       # print("parse: Current Hunk Start = ",
+                       #      block.hunk['hunk_start'])
+                       # print("parse: Current Hunk End = ",
+                       #       block.hunk['hunk_end'])
+                       # block.hunk['hunk_start'] = hunk_lines[0]
+                       # block.hunk['hunk_end'] = hunk_lines[1]
 
                         issue = self._extract_issue_if_exists(
                             comment, marker, block)
@@ -466,6 +469,15 @@ class TodoParser(object):
                             extracted_comments.append([comment])
 
                     for comment in extracted_comments:
+                        print("parse: Comment = ", comment)
+                        hunk_lines = self._get_hunk_lines
+                        print("parse: Hunk Lines = ", hunk_lines)
+                        print("parse: Current Hunk Start = ",
+                              block.hunk['hunk_start'])
+                        print("parse: Current Hunk End = ",
+                              block.hunk['hunk_end'])
+                        block.hunk['hunk_start'] = hunk_lines[0]
+                        block.hunk['hunk_end'] = hunk_lines[1]
                         issue = self._extract_issue_if_exists(
                             comment, marker, block)
                         if issue:
