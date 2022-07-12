@@ -672,7 +672,11 @@ class TodoParser(object):
             value = lines_search.group(0)
             value_p = value.strip()
             lines = value_p.strip(',')
-            lines = [int(lines[0]), int(lines[1])]
+            start = int(lines[0])
+            print("get_hunk_lines: start line = ", start)
+            end = int(lines[1])
+            print("get_hunk_lines: end line = ", end)
+            lines = [start, end]
             print("get_hunk_lines: Line Number for Hunk = ", lines)
         else:
             print("get_hunk_lines: Could not find Hunk Lines in Comment Line!")
