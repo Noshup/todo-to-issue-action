@@ -307,6 +307,7 @@ class TodoParser(object):
     LABELS_PATTERN = re.compile(r'(?<=labels:\s).+')
     ASSIGNEES_PATTERN = re.compile(r'(?<=assignees:\s).+')
     MILESTONE_PATTERN = re.compile(r'(?<=milestone:\s).+')
+    CODE_LINES_PATTERN = re.compile(r'(?<=lines:\s).+')
     USER_PROJECTS_PATTERN = re.compile(r'(?<=user projects:\s).+')
     ORG_PROJECTS_PATTERN = re.compile(r'(?<=org projects:\s).+')
 
@@ -648,6 +649,16 @@ class TodoParser(object):
             if milestone.isdigit():
                 milestone = int(milestone)
         return milestone
+
+    def _get_hunk_lines(self, comment):
+        """Check the passed comment for lines to include for code hunk"""
+        lines_search = self.CODE_LINES_PATTERN.search(comment, re.IGNORECASE)
+        value = None
+        start = None
+        end = None
+        if lines_search:
+            value = lines_search.groups
+            print("Found Lines Value = ", value)
 
     def _get_projects(self, comment, projects_type):
         """Check the passed comment for projects to link the issue to."""
