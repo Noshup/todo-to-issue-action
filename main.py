@@ -547,6 +547,7 @@ class TodoParser(object):
                     line_milestone = self._get_milestone(cleaned_line)
                     user_projects = self._get_projects(cleaned_line, 'user')
                     org_projects = self._get_projects(cleaned_line, 'org')
+                    lines = self._get_hunk_lines(cleaned_line)
                     if line_labels:
                         issue.labels.extend(line_labels)
                     elif line_assignees:
@@ -659,6 +660,7 @@ class TodoParser(object):
         if lines_search:
             value = lines_search.groups
             print("Found Lines Value = ", value)
+        return value
 
     def _get_projects(self, comment, projects_type):
         """Check the passed comment for projects to link the issue to."""
