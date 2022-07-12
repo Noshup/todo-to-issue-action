@@ -369,7 +369,7 @@ class TodoParser(object):
                 'Cannot retrieve syntax data. Operation will abort.')
 
     # noinspection PyTypeChecker
-    def parse(self, diff_file):
+    def parse(self, diff_file, client):
         issues = []
 
         # The parser works by gradually breaking the diff file down into smaller and smaller segments.
@@ -474,7 +474,7 @@ class TodoParser(object):
                         prev_comment = comment
                     for comment in extracted_comments:
                         issue = self._extract_issue_if_exists(
-                            comment, marker, block, curr_markdown_language, curr_file)
+                            comment, marker, block, curr_markdown_language, curr_file, client)
                         if issue:
                             issues.append(issue)
                 else:
@@ -489,7 +489,7 @@ class TodoParser(object):
 
                     for comment in extracted_comments:
                         issue = self._extract_issue_if_exists(
-                            comment, marker, block, curr_markdown_language, curr_file)
+                            comment, marker, block, curr_markdown_language, curr_file, client)
                         if issue:
                             issues.append(issue)
 
@@ -528,7 +528,7 @@ class TodoParser(object):
                         return syntax_details['markers'], self.languages_dict[language_name]['ace_mode']
         return None, None
 
-    def _extract_issue_if_exists(self, comment, marker, code_block, markdown, file):
+    def _extract_issue_if_exists(self, comment, marker, code_block, markdown, file, client):
         """Check this comment for Tags, and if found, build an Issue object."""
         issue = None
         for match in comment:
@@ -593,8 +593,8 @@ class TodoParser(object):
                         end = int(hunk_lines[1])
                         print("_extract_new_issue: Start Line = ", start)
                         print("_extract_new_issue: End Line = ", end)
-                        new_block = GitHubClient._get_code_blob(
-                            file, start, end, marker, markdown)
+                        new_block = GitHubClient._get_code_blob(client,
+                                                                file, start, end, marker, markdown)
                         if new_block:
                             print(
                                 "_extract_issue: Adding new Block Details to Issue Object...")
@@ -756,7 +756,7 @@ if __name__ == "__main__":
         # Get the diff from the last pushed commit.
         last_diff = StringIO(client.get_last_diff())
         # Parse the diff for TODOs and create an Issue object for each.
-        raw_issues = TodoParser().parse(last_diff)
+        raw_issues = TodoParser().parse(last_diff, client)
         # This is a simple, non-perfect check to filter out any TODOs that have just been moved.
         # It looks for items that appear in the diff as both an addition and deletion.
         # It is based on the assumption that TODOs will not have identical titles in identical files.
