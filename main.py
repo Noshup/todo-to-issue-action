@@ -498,7 +498,7 @@ class TodoParser(object):
         return None, None
 
     def _extract_issue_if_exists(self, comment, marker, code_block):
-        """Check this comment for TODOs, and if found, build an Issue object."""
+        """Check this comment for Tags, and if found, build an Issue object."""
         issue = None
         for match in comment:
             lines = match.group().split('\n')
@@ -511,9 +511,10 @@ class TodoParser(object):
                         issue_title = f'[{ref}] {line_title}'
                     else:
                         issue_title = line_title
-                    lines = self._get_hunk_lines(cleaned_line)
-                    issueHunk = code_block['hunk']
-                    print("extract_issue: hunk = ", issueHunk)
+                    hunk_lines = self._get_hunk_lines(cleaned_line)
+                    print("Hunk Lines = ", hunk_lines)
+                    issue_hunk = code_block['hunk']
+                    print("extract_issue: hunk = ", issue_hunk)
                     issue = Issue(
                         title=issue_title,
                         labels=[],  # 'todo'
@@ -658,7 +659,14 @@ class TodoParser(object):
         end = None
         if lines_search:
             value = lines_search.groups
+            start = lines_search.group(0)
+            end = lines_search.group(1)
             print("Found Lines Value = ", value)
+            print("Group 0 = ", start)
+            print("Group 1 = ", end)
+        else:
+            print("Could not find Hunk Lines in Comment Line!")
+
         return value
 
     def _get_projects(self, comment, projects_type):
