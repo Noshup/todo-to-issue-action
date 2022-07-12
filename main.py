@@ -561,13 +561,23 @@ class TodoParser(object):
                         issue.org_projects.extend(org_projects)
                     elif hunk_lines:
                         print(
-                            "extract_issue_if_exists: Attempting to change Hunk Start/End Line Nums...")
-                        issue.hunk['hunk_start'] = hunk_lines[0]
-                        print("extract_issue_if_exists: hunk_start = ",
-                              issue.hunk['hunk_start'])
-                        issue.hunk['hunk_end'] = hunk_lines[1]
-                        print("extract_issue_if_exists: hunk_end = ",
-                              issue.hunk['hunk_end'])
+                            "extract_issue_if_exists: Current Hunk Start = ", issue.hunk.hunk_start)
+                        print("extract_issue_if_exists: Current Hunk End = ",
+                              issue.hunk.hunk_end)
+                        issue.hunk.hunk_start = hunk_lines[0]
+                        issue.hunk.hunk_end = hunk_lines[1]
+                        print(
+                            "extract_issue_if_exists: New Hunk Start = ", issue.hunk.hunk_start)
+                        print("extract_issue_if_exists: New Hunk End = ",
+                              issue.hunk.hunk_end)
+                        # print(
+                        #    "extract_issue_if_exists: Attempting to change Hunk Start/End Line Nums...")
+                        #issue.hunk['hunk_start'] = hunk_lines[0]
+                        # print("extract_issue_if_exists: hunk_start = ",
+                        #      issue.hunk['hunk_start'])
+                        #issue.hunk['hunk_end'] = hunk_lines[1]
+                        # print("extract_issue_if_exists: hunk_end = ",
+                        #      issue.hunk['hunk_end'])
                     elif len(cleaned_line):
                         issue.body.append(cleaned_line)
 
@@ -670,8 +680,11 @@ class TodoParser(object):
         lines = None
         if lines_search:
             value = lines_search.group(0)
-            value_p = value.strip()
-            lines = value_p.strip(',')
+            print("get_hunk_lines: Raw Value = ", value)
+            value = value.strip()
+            print("get_hunk_lines: Stripped Value = ", value)
+            lines = value.strip(',')
+            print("get_hunk_lines: Lines = ", lines)
             start = int(lines[0])
             print("get_hunk_lines: start line = ", start)
             end = int(lines[1])
