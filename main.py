@@ -512,8 +512,7 @@ class TodoParser(object):
                         issue_title = line_title
 
                     issueHunk = code_block['hunk']
-                    print("extract_issue: hunkStart = ",
-                          issueHunk['hunk_start'], " hunkEnd = ", issueHunk['hunk_end'])
+                    print("extract_issue: hunk = ", issueHunk)
                     issue = Issue(
                         title=issue_title,
                         labels=[],  # 'todo'
