@@ -564,20 +564,12 @@ class TodoParser(object):
                             "extract_issue_if_exists: Current Hunk Start = ", issue.hunk.hunk_start)
                         print("extract_issue_if_exists: Current Hunk End = ",
                               issue.hunk.hunk_end)
-                        issue.hunk.hunk_start = hunk_lines[0]
-                        issue.hunk.hunk_end = hunk_lines[1]
-                        print(
-                            "extract_issue_if_exists: New Hunk Start = ", issue.hunk.hunk_start)
-                        print("extract_issue_if_exists: New Hunk End = ",
-                              issue.hunk.hunk_end)
+                        #issue.hunk.hunk_start = hunk_lines[0]
+                        #issue.hunk.hunk_end = hunk_lines[1]
                         # print(
-                        #    "extract_issue_if_exists: Attempting to change Hunk Start/End Line Nums...")
-                        #issue.hunk['hunk_start'] = hunk_lines[0]
-                        # print("extract_issue_if_exists: hunk_start = ",
-                        #      issue.hunk['hunk_start'])
-                        #issue.hunk['hunk_end'] = hunk_lines[1]
-                        # print("extract_issue_if_exists: hunk_end = ",
-                        #      issue.hunk['hunk_end'])
+                        #    "extract_issue_if_exists: New Hunk Start = ", issue.hunk.hunk_start)
+                        # print("extract_issue_if_exists: New Hunk End = ",
+                        #      issue.hunk.hunk_end)
                     elif len(cleaned_line):
                         issue.body.append(cleaned_line)
 
@@ -632,7 +624,7 @@ class TodoParser(object):
                 "Issue Parser->get_title: Did not find Term in title! Initiating secondary search...")
             #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
             title_ref_pattern = re.compile(
-                r'(?:TODO|BUG|QUESTION|DOCUMENTATION)\(.+')
+                r'(?:TODO|BUG|QUESTION|DOCUMENTATION|ENHANCEMENT)\(.+')
             title_ref_search = title_ref_pattern.search(comment, re.IGNORECASE)
             if title_ref_search:
                 title = title_ref_search.group(0).strip()
@@ -681,15 +673,15 @@ class TodoParser(object):
         if lines_search:
             value = lines_search.group(0)
             print("get_hunk_lines: Raw Value = ", value)
-            value = value.strip()
+            value_p = value.strip()
             print("get_hunk_lines: Stripped Value = ", value)
-            lines = value.strip(',')
-            print("get_hunk_lines: Lines = ", lines)
-            start = int(lines[0])
-            print("get_hunk_lines: start line = ", start)
-            end = int(lines[1])
-            print("get_hunk_lines: end line = ", end)
-            lines = [start, end]
+            lines = value_p.strip(',')
+            print("get_hunk_lines: Lines =", lines)
+            #start = lines[0]
+            #print("get_hunk_lines: start line = ", start)
+            #end = lines[1]
+            #print("get_hunk_lines: end line = ", end)
+            #lines = [start, end]
             print("get_hunk_lines: Line Number for Hunk = ", lines)
         else:
             print("get_hunk_lines: Could not find Hunk Lines in Comment Line!")
