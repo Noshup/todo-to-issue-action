@@ -559,8 +559,18 @@ class TodoParser(object):
                         issue.user_projects.extend(user_projects)
                     elif org_projects:
                         issue.org_projects.extend(org_projects)
+                    elif hunk_lines:
+                        print(
+                            "extract_issue_if_exists: Attempting to change Hunk Start/End Line Nums...")
+                        issue.hunk['hunk_start'] = hunk_lines[0]
+                        print("extract_issue_if_exists: hunk_start = ",
+                              issue.hunk['hunk_start'])
+                        issue.hunk['hunk_end'] = hunk_lines[1]
+                        print("extract_issue_if_exists: hunk_end = ",
+                              issue.hunk['hunk_end'])
                     elif len(cleaned_line):
                         issue.body.append(cleaned_line)
+
         return issue
 
     def _get_line_status(self, comment):
@@ -657,18 +667,17 @@ class TodoParser(object):
         print("get_hunk_lines: Search Subject = ", comment)
         lines_search = self.CODE_LINES_PATTERN.search(comment, re.IGNORECASE)
         value = None
-        start = None
-        end = None
+        lines = None
         if lines_search:
-            value = lines_search.groups
-            start = lines_search.group(0)
-            #end = lines_search.group(1)
-            print("get_hunk_lines: Found Lines Value (all groups) = ", value)
-            print("get_hunk_lines: Group 0 = ", start)
+            value = lines_search.group(0)
+            value_p = value.strip()
+            lines = value_p.strip(',')
+            lines = [int(lines[0]), int(lines[1])]
+            print("get_hunk_lines: Line Number for Hunk = ", lines)
         else:
             print("get_hunk_lines: Could not find Hunk Lines in Comment Line!")
 
-        return value
+        return lines
 
     def _get_projects(self, comment, projects_type):
         """Check the passed comment for projects to link the issue to."""
