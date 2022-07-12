@@ -442,6 +442,15 @@ class TodoParser(object):
                                     extracted_comments) - 1].append(comment)
                         prev_comment = comment
                     for comment in extracted_comments:
+                        hunk_lines = self._get_hunk_lines
+                        print("parse: Hunk Lines = ", hunk_lines)
+                        print(
+                            "extract_issue_if_exists: Current Hunk Start = ", block.hunk['hunk_start'])
+                        print("extract_issue_if_exists: Current Hunk End = ",
+                              block.hunk['hunk_end'])
+                        block.hunk['hunk_start'] = hunk_lines[0]
+                        block.hunk['hunk_end'] = hunk_lines[1]
+
                         issue = self._extract_issue_if_exists(
                             comment, marker, block)
                         if issue:
@@ -511,8 +520,6 @@ class TodoParser(object):
                         issue_title = f'[{ref}] {line_title}'
                     else:
                         issue_title = line_title
-                    hunk_lines = self._get_hunk_lines(cleaned_line)
-                    print("Hunk Lines = ", hunk_lines)
                     issue_hunk = code_block['hunk']
                     print("extract_issue: hunk = ", issue_hunk)
                     issue = Issue(
@@ -559,11 +566,11 @@ class TodoParser(object):
                         issue.user_projects.extend(user_projects)
                     elif org_projects:
                         issue.org_projects.extend(org_projects)
-                    elif hunk_lines:
-                        print(
-                            "extract_issue_if_exists: Current Hunk Start = ", issue.hunk.hunk_start)
-                        print("extract_issue_if_exists: Current Hunk End = ",
-                              issue.hunk.hunk_end)
+                    # elif hunk_lines:
+                        # print(
+                        #    "extract_issue_if_exists: Current Hunk Start = ", issue.hunk.hunk_start)
+                       # print("extract_issue_if_exists: Current Hunk End = ",
+                       #       issue.hunk.hunk_end)
                         #issue.hunk.hunk_start = hunk_lines[0]
                         #issue.hunk.hunk_end = hunk_lines[1]
                         # print(
