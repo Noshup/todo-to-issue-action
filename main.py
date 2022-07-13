@@ -164,7 +164,7 @@ class GitHubClient(object):
                 'file': file_path,
                 'markers': curr_markers,
                 'markdown_language': curr_markdown_language,
-                'start_line': start,
+                'start_line': start_a,
                 'hunk': target_string,
                 'hunk_start': None,
                 'hunk_end': None
