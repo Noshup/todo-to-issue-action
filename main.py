@@ -482,7 +482,6 @@ class TodoParser(object):
 
         # Now for each code block, check for comments, then those comments for Tags.
         for block in code_blocks:
-            print("Code Block Identified = ", block)
             for marker in block['markers']:
                 # Check if there are line or block comments.
                 if marker['type'] == 'line':
@@ -609,7 +608,7 @@ class TodoParser(object):
                     line_milestone = self._get_milestone(cleaned_line)
                     user_projects = self._get_projects(cleaned_line, 'user')
                     org_projects = self._get_projects(cleaned_line, 'org')
-                    #hunk_lines = self._get_hunk_lines(cleaned_line)
+                    hunk_lines = self._get_hunk_lines(cleaned_line)
                     if line_labels:
                         issue.labels.extend(line_labels)
                     elif line_assignees:
