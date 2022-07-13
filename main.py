@@ -185,6 +185,8 @@ class GitHubClient(object):
         url_to_line = f'https://github.com/{self.repo}/blob/{self.sha}/{issue.file_name}#L{issue.start_line}'
         snippet = '```' + issue.markdown_language + '\n' + issue.hunk + '\n' + '```'
 
+        print("Snippet to be Attached: \n\n", snippet)
+
         issue_template = os.getenv('INPUT_ISSUE_TEMPLATE', None)
         if issue_template:
             issue_contents = (issue_template.replace('{{ title }}', issue.title)
