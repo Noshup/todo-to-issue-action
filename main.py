@@ -117,23 +117,55 @@ class GitHubClient(object):
 
     def _get_code_blob(self, file_path, start, end, curr_markers, curr_markdown_language):
         file_url = f'{self.repos_url}{self.repo}/contents/{file_path}'
-        file_64 = None
         file = None
+        file_json = None
+        file_content = None
+        file_content_64 = None
+        lines_64 = None
+
+        lines_str = []
+        target_lines = []
+        target_string = ""
         block = None
         file_blob_request = requests.get(file_url, headers=self.issue_headers)
         if file_blob_request.status_code == 200:
-            file_64 = str(file_blob_request.content)
-            content_by_line = file_64.split('\n')
-            target = ""
-            for x in range(start, end):
-                target += content_by_line[x]+'\n'
-            file = base64.b64decode(target)
+            print("Request Succeeded!")
+            file = file_blob_request.text
+            file_json = json.loads(file)
+            file_content = file_json["content"]
+            file_content_64 = bytes(file_content, 'raw_unicode_escape')
+            lines_64 = file_content.split('\n')
+            print("Content Type = ", type(file_content))
+            print("Contents = \n", file_content)
+            print("\nContents By Line: \n", lines_64,
+                  "\nNumber of Lines = ", len(lines_64))
+
+            print("\nContent base64 = ", file_content_64)
+            str_content = base64.b64decode(file_content_64)
+
+            print("\nDecoded Content = ", str_content)
+
+            lines_str = str_content.split(b'\n')
+            print("\nSplit String Content: \n", lines_str)
+
+            print("\nTarget Line Numbers = ", start, " -> ", end)
+            start_a = start-1
+            end_a = end+1
+            for x in range(start_a, end_a):
+                target_lines.append(lines_str[x])
+            print("\nTarget Lines: ", target_lines)
+
+            for x in target_lines:
+                str_actual = x.decode('utf-8')
+                target_string = target_string+str_actual+'\n'
+
+            print("\n Target String: \n\n", target_string)
             block = {
                 'file': file_path,
                 'markers': curr_markers,
                 'markdown_language': curr_markdown_language,
                 'start_line': start,
-                'hunk': file,
+                'hunk': target_string,
                 'hunk_start': None,
                 'hunk_end': None
             }
@@ -588,23 +620,23 @@ class TodoParser(object):
                         issue.user_projects.extend(user_projects)
                     elif org_projects:
                         issue.org_projects.extend(org_projects)
-                  #  elif hunk_lines:
-                  #      start = hunk_lines[0]
-                  #      end = hunk_lines[1]
-                  #      print("_extract_new_issue: Start Line = ", start)
-                  #      print("_extract_new_issue: End Line = ", end)
-                  #      new_block = GitHubClient._get_code_blob(client,
-                  #                                              file, start, end, marker, markdown)
-                  #      if new_block:
-                  #          print(
-                  #              "_extract_issue: Adding new Block Details to Issue Object...")
-                  #          issue.hunk = new_block['hunk']
-                  #          issue.file_name = new_block['file']
-                  #          issue.start_line = new_block['start_line']
-                  #          issue.markdown_language = new_block['markdown_language']
-                  #      else:
-                  #          print(
-                  #              "_extract_issue: Failed to retrieve new Block!")
+                    elif hunk_lines:
+                        start = hunk_lines[0]
+                        end = hunk_lines[1]
+                        print("_extract_new_issue: Start Line = ", start)
+                        print("_extract_new_issue: End Line = ", end)
+                        new_block = GitHubClient._get_code_blob(client,
+                                                                file, start, end, marker, markdown)
+                        if new_block:
+                            print(
+                                "_extract_issue: Adding new Block Details to Issue Object...")
+                            issue.hunk = new_block['hunk']
+                            issue.file_name = new_block['file']
+                            issue.start_line = new_block['start_line']
+                            issue.markdown_language = new_block['markdown_language']
+                        else:
+                            print(
+                                "_extract_issue: Failed to retrieve new Block!")
 
                     elif len(cleaned_line):
                         issue.body.append(cleaned_line)
@@ -708,18 +740,12 @@ class TodoParser(object):
         lines = None
         if lines_search:
             value = lines_search.group(0)
-            print("get_hunk_lines: Raw Value = ", value)
+            print("get_hunk_lines: Raw Value =", value)
             value_p = value.strip(' ')
-            print("get_hunk_lines: Stripped Value = ", value)
-            start = value_p.strip(',')[0]
-            end = value_p.strip(',')[1]
-            lines = [int(start), int(end)]
-            print("get_hunk_lines: Lines =", lines)
-            #start = lines[0]
-            #print("get_hunk_lines: start line = ", start)
-            #end = lines[1]
-            #print("get_hunk_lines: end line = ", end)
-            #lines = [start, end]
+            lines = value_p.split(',')
+            start = int(lines[0])
+            end = int(lines[1])
+            lines = [start, end]
             print("get_hunk_lines: Line Number for Hunk = ", lines)
         else:
             print("get_hunk_lines: Could not find Hunk Lines in Comment Line!")
