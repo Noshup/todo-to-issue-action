@@ -186,6 +186,7 @@ class GitHubClient(object):
         snippet = '```' + issue.markdown_language + '\n' + issue.hunk + '\n' + '```'
 
         print("Snippet to be Attached: \n\n", snippet)
+        print("\n\nSnippet Issue Markdown Lang = ", issue.markdown_language)
 
         issue_template = os.getenv('INPUT_ISSUE_TEMPLATE', None)
         if issue_template:
@@ -575,8 +576,7 @@ class TodoParser(object):
                         issue_title = f'[{ref}] {line_title}'
                     else:
                         issue_title = line_title
-                    issue_hunk = code_block['hunk']
-                    print("extract_issue: hunk = ", issue_hunk)
+
                     issue = Issue(
                         title=issue_title,
                         labels=[],  # 'todo'
