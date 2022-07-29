@@ -279,20 +279,17 @@ class TodoParser(object):
 
     def __init__(self):
         # We could support more identifiers later quite easily.
+        labels = os.getenv('INPUT_ISSUE_IDENTIFIERS')
+
+        print("TodoParser : _init -> Labels Loaded from Environment Variable ISSUE_IDENTIFIERS = ", labels)
+        labelsTokenized = labels.split('|')
+        print("TodoParser : _init -> Labels Split into Terms = ", labelsTokenized)
+
+        self.identifier_expression = labels
+
         self.identifier = ['TODO', 'BUG', 'QUESTION',
                            'DOCUMENTATION', 'ENHANCEMENT']
         self.languages_dict = None
-
-        labels = os.getenv('INPUT_ISSUE_IDENTIFIERS')
-        labelT = os.getenv('INPUT_LABEL')
-
-        print("TodoParser : _init -> Labels Loaded from Environment Variable ISSUE_IDENTIFIERS = ", labels)
-        print(
-            "TodoParser : _init -> Labels Loaded from Environment Variable LABEL = ", labelT)
-
-        #labelsTokenized = labels.split('|')
-
-        #print("TodoParser : _init -> Labels Split into Terms = ", labelsTokenized)
 
         # Load the languages data for ascertaining file types.
         languages_url = 'https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml'
@@ -592,7 +589,7 @@ class TodoParser(object):
 
     def _get_title(self, comment):
         """Check the passed comment for a new issue title (and reference, if specified)."""
-        exp = 'TODO|BUG|QUESTION|DOCUMENTATION|ENHANCEMENT'
+        exp = self.identifier_expression
         title = None
         ref = None
         title_search = search(exp, comment)
