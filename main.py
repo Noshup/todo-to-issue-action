@@ -129,36 +129,23 @@ class GitHubClient(object):
         block = None
         file_blob_request = requests.get(file_url, headers=self.issue_headers)
         if file_blob_request.status_code == 200:
-            #print("Request Succeeded!")
             file = file_blob_request.text
             file_json = json.loads(file)
             file_content = file_json["content"]
             file_content_64 = bytes(file_content, 'raw_unicode_escape')
-            #print("Content Type = ", type(file_content))
-            #print("Contents = \n", file_content)
-            # print("\nContents By Line: \n", lines_64,
-            #      "\nNumber of Lines = ", len(lines_64))
-
-            #print("\nContent base64 = ", file_content_64)
             str_content = base64.b64decode(file_content_64)
 
-            #print("\nDecoded Content = ", str_content)
-
             lines_str = str_content.split(b'\n')
-            #print("\nSplit String Content: \n", lines_str)
 
-            #print("\nTarget Line Numbers = ", start, " -> ", end)
             start_a = start-1
             end_a = end+1
             for x in range(start_a, end_a):
                 target_lines.append(lines_str[x])
-            #print("\nTarget Lines: ", target_lines)
 
             for x in target_lines:
                 str_actual = x.decode('utf-8')
                 target_string = target_string+str_actual+'\n'
 
-            #print("\n Target String: \n\n", target_string)
             block = {
                 'file': file_path,
                 'markers': curr_markers,
@@ -184,8 +171,6 @@ class GitHubClient(object):
         url_to_line = f'https://github.com/{self.repo}/blob/{self.sha}/{issue.file_name}#L{issue.start_line}'
         snippet = '```' + issue.markdown_language + '\n' + issue.hunk + '\n' + '```'
 
-        #print("Snippet to be Attached: \n\n", snippet)
-        #print("\n\nSnippet Issue Markdown Lang = ", issue.markdown_language)
         print("create_issue: Creating Issue...")
         issue_template = os.getenv('INPUT_ISSUE_TEMPLATE', None)
         if issue_template:
@@ -244,7 +229,6 @@ class GitHubClient(object):
         matched = 0
         issue_number = None
         for existing_issue in self.existing_issues:
-            print("close_issue: Visiting Issue = ", existing_issue['number'])
             # This is admittedly a simple check that may not work in complex scenarios, but we can't deal with them yet.
             if existing_issue['title'] == issue.title:
                 print("close_issue: Found Existing issue with title: ",
@@ -332,9 +316,7 @@ class TodoParser(object):
             self.FILE_HUNK_PATTERN, diff_file.read(), re.DOTALL)
         last_end = None
         extracted_file_hunks = []
-        print("parse: Extracting File Hunks to Split Diff into File-Based Sections...")
         for i, file_hunk in enumerate(file_hunks):
-            print("parse: File Hunk Identified: ", file_hunk)
             extracted_file_hunks.append(file_hunk.group(0))
             last_end = file_hunk.end()
         diff_file.seek(0)
@@ -415,12 +397,8 @@ class TodoParser(object):
                     prev_comment = None
                     for i, comment in enumerate(comments):
                         if i == 0 or any(x in comment.group(0) for x in self.identifier):
-                            # print("parse:  Identified tag in ",
-                            #      comment.group(0))
                             extracted_comments.append([comment])
                         else:
-                            # print("parse:  Could not Identify tag in %s" %
-                            #     (comment.group(0)))
                             if comment.start() == prev_comment.end() + 1:
                                 extracted_comments[len(
                                     extracted_comments) - 1].append(comment)
@@ -578,14 +556,11 @@ class TodoParser(object):
         addition_search = self.ADDITION_PATTERN.search(comment)
 
         if addition_search:
-            print("_get_line_status: Detected ADDITION Status!")
             return LineStatus.ADDED, addition_search.group(0)
         else:
             deletion_search = self.DELETION_PATTERN.search(comment)
             if deletion_search:
-                print("_get_line_status: Detected DELETION Status!")
                 return LineStatus.DELETED, deletion_search.group(0)
-        print("_get_line_status: Detected UNCHANGED Status!")
         return LineStatus.UNCHANGED, comment[1:]
 
     @staticmethod
@@ -610,21 +585,13 @@ class TodoParser(object):
         exp = 'TODO|BUG|QUESTION|DOCUMENTATION|ENHANCEMENT'
         title = None
         ref = None
-       # print(
-       #     "Issue Parser->get_title: Searching for Term in Title with Pattern Provided...")
-       # print("Issue Parser->get_title: Search Subject = %s" % (comment))
         title_search = search(exp, comment)
         if title_search:
-           # print("Issue Parser->get_title: Found Match in %s" % (comment))
             matchedTerm = title_search.group(0).strip()
             title = comment.strip(matchedTerm)
             title = title.strip()
-           # print("Issue Parser->get_title: Issue Title = ", title)
         # Have NOT adjusted this to work properly; supposed to identify assigned individuals in TODO(ind) fmt but cannot be bothered...
         else:
-           # print(
-           #     "Issue Parser->get_title: Did not find Term in title! Initiating secondary search...")
-            #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
             title_ref_pattern = re.compile(
                 r'(?:TODO|BUG|QUESTION|DOCUMENTATION|ENHANCEMENT)\(.+')
             title_ref_search = title_ref_pattern.search(comment, re.IGNORECASE)
@@ -668,19 +635,16 @@ class TodoParser(object):
 
     def _get_hunk_lines(self, comment):
         """Check the passed comment for lines to include for code hunk"""
-        print("get_hunk_lines: Search Subject = ", comment)
         lines_search = self.CODE_LINES_PATTERN.search(comment, re.IGNORECASE)
         value = None
         lines = None
         if lines_search:
             value = lines_search.group(0)
-            print("get_hunk_lines: Raw Value =", value)
             value_p = value.strip(' ')
             lines = value_p.split(',')
             start = int(lines[0])
             end = int(lines[1])
             lines = [start, end]
-            print("get_hunk_lines: Line Number for Hunk = ", lines)
         else:
             print("get_hunk_lines: Could not find Hunk Lines in Comment Line!")
 
