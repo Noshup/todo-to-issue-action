@@ -281,7 +281,6 @@ class TodoParser(object):
         # We could support more identifiers later quite easily.
         self.identifier = ['TODO', 'BUG', 'QUESTION',
                            'DOCUMENTATION', 'ENHANCEMENT']
-        #self.identifier = '(?:TODO|BUG|QUESTION|DOCUMENTATION)'
         self.languages_dict = None
 
         # Load the languages data for ascertaining file types.

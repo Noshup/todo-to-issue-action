@@ -32,12 +32,10 @@ inputs:
     description: "The GitHub access token to allow us to retrieve, create and update issues (automatically set)"
     required: false
     default: ${{ github.token }}
-  LABEL:
-    description: "The label that will be used to identify TODO comments (deprecated)"
+  ISSUE_IDENTIFIERS:
+    description: "The Tag used to signify that a comment is/to be associated with an issue in Github. Default value is ['TODO'], but you can add as many elements to the list as you like."
     required: false
-  COMMENT_MARKER:
-    description: "The marker used to signify a line comment in your code (deprecated)"
-    required: false
+    default: ["TODO"]
   CLOSE_ISSUES:
     description: "Optional input that specifies whether to attempt to close an issue when a TODO is removed"
     required: true
@@ -46,15 +44,6 @@ inputs:
     description: "For multiline TODOs, format each line as a new paragraph when creating the issue"
     required: true
     default: true
-  PROJECTS_SECRET:
-    description: "Encrypted secret corresponding to your personal access token (do not enter the actual secret)"
-    required: false
-  USER_PROJECTS:
-    description: "Default user projects"
-    required: false
-  ORG_PROJECTS:
-    description: "Default organization projects"
-    required: false
   IGNORE:
     description: "A collection of comma-delimited regular expression that matches files that should be ignored when searching for TODOs"
     required: false
