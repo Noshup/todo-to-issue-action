@@ -117,11 +117,11 @@ class GitHubClient(object):
 
     def _get_code_blob(self, file_path, start, end, curr_markers, curr_markdown_language):
         file_url = f'{self.repos_url}{self.repo}/contents/{file_path}'
+        print("_get_code_blob: Attempting to Fetch Code For File = ", file_url)
         file = None
         file_json = None
         file_content = None
         file_content_64 = None
-        lines_64 = None
 
         lines_str = []
         target_lines = []
@@ -129,37 +129,36 @@ class GitHubClient(object):
         block = None
         file_blob_request = requests.get(file_url, headers=self.issue_headers)
         if file_blob_request.status_code == 200:
-            print("Request Succeeded!")
+            #print("Request Succeeded!")
             file = file_blob_request.text
             file_json = json.loads(file)
             file_content = file_json["content"]
             file_content_64 = bytes(file_content, 'raw_unicode_escape')
-            lines_64 = file_content.split('\n')
-            print("Content Type = ", type(file_content))
-            print("Contents = \n", file_content)
-            print("\nContents By Line: \n", lines_64,
-                  "\nNumber of Lines = ", len(lines_64))
+            #print("Content Type = ", type(file_content))
+            #print("Contents = \n", file_content)
+            # print("\nContents By Line: \n", lines_64,
+            #      "\nNumber of Lines = ", len(lines_64))
 
-            print("\nContent base64 = ", file_content_64)
+            #print("\nContent base64 = ", file_content_64)
             str_content = base64.b64decode(file_content_64)
 
-            print("\nDecoded Content = ", str_content)
+            #print("\nDecoded Content = ", str_content)
 
             lines_str = str_content.split(b'\n')
-            print("\nSplit String Content: \n", lines_str)
+            #print("\nSplit String Content: \n", lines_str)
 
-            print("\nTarget Line Numbers = ", start, " -> ", end)
+            #print("\nTarget Line Numbers = ", start, " -> ", end)
             start_a = start-1
             end_a = end+1
             for x in range(start_a, end_a):
                 target_lines.append(lines_str[x])
-            print("\nTarget Lines: ", target_lines)
+            #print("\nTarget Lines: ", target_lines)
 
             for x in target_lines:
                 str_actual = x.decode('utf-8')
                 target_string = target_string+str_actual+'\n'
 
-            print("\n Target String: \n\n", target_string)
+            #print("\n Target String: \n\n", target_string)
             block = {
                 'file': file_path,
                 'markers': curr_markers,
@@ -185,9 +184,9 @@ class GitHubClient(object):
         url_to_line = f'https://github.com/{self.repo}/blob/{self.sha}/{issue.file_name}#L{issue.start_line}'
         snippet = '```' + issue.markdown_language + '\n' + issue.hunk + '\n' + '```'
 
-        print("Snippet to be Attached: \n\n", snippet)
-        print("\n\nSnippet Issue Markdown Lang = ", issue.markdown_language)
-
+        #print("Snippet to be Attached: \n\n", snippet)
+        #print("\n\nSnippet Issue Markdown Lang = ", issue.markdown_language)
+        print("create_issue: Creating Issue...")
         issue_template = os.getenv('INPUT_ISSUE_TEMPLATE', None)
         if issue_template:
             issue_contents = (issue_template.replace('{{ title }}', issue.title)
@@ -203,7 +202,7 @@ class GitHubClient(object):
         # The below is a simple and imperfect check based on the issue title.
         for existing_issue in self.existing_issues:
             if issue.title == existing_issue['title']:
-                print(f'Skipping issue (already exists).')
+                print(f'create_issue: Skipping issue (already exists).')
                 return
 
         new_issue_body = {'title': title,
@@ -221,7 +220,7 @@ class GitHubClient(object):
                 valid_assignees.append(assignee)
             else:
                 print(
-                    f'Assignee {assignee} does not exist! Dropping this assignee!')
+                    f'create_issue: Assignee {assignee} does not exist! Dropping this assignee!')
         new_issue_body['assignees'] = valid_assignees
 
         if issue.milestone:
@@ -232,42 +231,36 @@ class GitHubClient(object):
                 new_issue_body['milestone'] = issue.milestone
             else:
                 print(
-                    f'Milestone {issue.milestone} does not exist! Dropping this parameter!')
+                    f'create_issue: Milestone {issue.milestone} does not exist! Dropping this parameter!')
 
         new_issue_request = requests.post(url=self.issues_url, headers=self.issue_headers,
                                           data=json.dumps(new_issue_body))
-
-        # Check if we should assign this issue to any projects.
-        if new_issue_request.status_code == 201 and (len(issue.user_projects) > 0 or len(issue.org_projects) > 0):
-            issue_json = new_issue_request.json()
-            issue_id = issue_json['id']
-
-            if len(issue.user_projects) > 0:
-                self.add_issue_to_projects(
-                    issue_id, issue.user_projects, 'user')
-            if len(issue.org_projects) > 0:
-                self.add_issue_to_projects(issue_id, issue.org_projects, 'org')
 
         return new_issue_request.status_code
 
     def close_issue(self, issue):
         """Check to see if this issue can be found on GitHub and if so close it."""
+        print("close_issue: Evaluating...")
         matched = 0
         issue_number = None
         for existing_issue in self.existing_issues:
+            print("close_issue: Visiting Issue = ", existing_issue['number'])
             # This is admittedly a simple check that may not work in complex scenarios, but we can't deal with them yet.
             if existing_issue['title'] == issue.title:
-                print("Found Existing issue with title: ",
+                print("close_issue: Found Existing issue with title: ",
                       existing_issue['title'], " Which has issue Number = ", existing_issue['number'])
                 matched += 1
                 # If there are multiple issues with similar titles, don't try and close any.
                 if matched > 1:
-                    print(f'Skipping issue (multiple matches)')
+                    print(f'close_issue: Skipping issue (multiple matches)')
                     break
                 issue_number = existing_issue['number']
         else:
             # The titles match, so we will try and close the issue.
+
             update_issue_url = f'{self.repos_url}{self.repo}/issues/{issue_number}'
+            print("close_issue: Attempting to close issue ",
+                  issue_number, "Using URL = ", update_issue_url)
             body = {'state': 'closed'}
             requests.patch(update_issue_url,
                            headers=self.issue_headers, data=json.dumps(body))
@@ -276,86 +269,10 @@ class GitHubClient(object):
             body = {'body': f'Closed in {self.sha}'}
             update_issue_request = requests.post(issue_comment_url, headers=self.issue_headers,
                                                  data=json.dumps(body))
+            print("close_issue: Update Issue State Status Code = ",
+                  update_issue_request.status_code)
             return update_issue_request.status_code
         return None
-
-    def add_issue_to_projects(self, issue_id, projects, projects_type):
-        """Attempt to add this issue to the specified user or organisation projects."""
-        projects_secret = os.getenv('INPUT_PROJECTS_SECRET', None)
-        if not projects_secret:
-            print('You need to create and set PROJECTS_SECRET to use projects')
-            return
-        projects_headers = {
-            'Accept': 'application/vnd.github.inertia-preview+json',
-            'Authorization': f'token {projects_secret}'
-        }
-
-        # Loop through all the projects that we should assign this issue to.
-        for i, project in enumerate(projects):
-            print(
-                f'Adding issue to {projects_type} project {i + 1} of {len(projects)}')
-            project = project.replace(' / ', '/')
-            try:
-                entity_name, project_name, column_name = project.split('/')
-            except ValueError:
-                print('Invalid project syntax')
-                continue
-            entity_name = entity_name.strip()
-            project_name = project_name.strip()
-            column_name = column_name.strip()
-
-            if projects_type == 'user':
-                projects_url = f'{self.base_url}users/{entity_name}/projects'
-            elif projects_type == 'org':
-                projects_url = f'{self.base_url}orgs/{entity_name}/projects'
-            else:
-                return
-
-            # We need to use the project name to get its ID.
-            projects_request = requests.get(
-                url=projects_url, headers=projects_headers)
-            if projects_request.status_code == 200:
-                projects_json = projects_request.json()
-                for project_dict in projects_json:
-                    if project_dict['name'].lower() == project_name.lower():
-                        project_id = project_dict['id']
-                        break
-                else:
-                    print('Project does not exist, skipping')
-                    continue
-            else:
-                print('An error occurred, skipping')
-                continue
-
-            # Use the project ID and column name to get the column ID.
-            columns_url = f'{self.base_url}projects/{project_id}/columns'
-            columns_request = requests.get(
-                url=columns_url, headers=projects_headers)
-            if columns_request.status_code == 200:
-                columns_json = columns_request.json()
-                for column_dict in columns_json:
-                    if column_dict['name'].lower() == column_name.lower():
-                        column_id = column_dict['id']
-                        break
-                else:
-                    print('Column does not exist, skipping')
-                    continue
-            else:
-                print('An error occurred, skipping')
-                continue
-
-            # Use the column ID to assign the issue to the project.
-            new_card_url = f'{self.base_url}projects/columns/{column_id}/cards'
-            new_card_body = {
-                'content_id': int(issue_id),
-                'content_type': 'Issue'
-            }
-            new_card_request = requests.post(url=new_card_url, headers=projects_headers,
-                                             data=json.dumps(new_card_body))
-            if new_card_request.status_code == 201:
-                print('Issue card added to project')
-            else:
-                print('Issue card could not be added to project')
 
 
 class TodoParser(object):
@@ -442,7 +359,7 @@ class TodoParser(object):
                 curr_file)
             if not curr_markers or not curr_markdown_language:
                 print(
-                    f'Could not check {curr_file} for TODOs as this language is not yet supported by default.')
+                    f'parse: Could not check {curr_file} for Tags as this language is not yet supported by default.')
                 continue
 
             # Break this section down into individual changed code blocks.
@@ -496,12 +413,12 @@ class TodoParser(object):
                     prev_comment = None
                     for i, comment in enumerate(comments):
                         if i == 0 or any(x in comment.group(0) for x in self.identifier):
-                            print("Issue Parser: Identified tag in ",
-                                  comment.group(0))
+                            # print("parse:  Identified tag in ",
+                            #      comment.group(0))
                             extracted_comments.append([comment])
                         else:
-                            print("Issue Parser: Could not Identify tag in %s" %
-                                  (comment.group(0)))
+                            # print("parse:  Could not Identify tag in %s" %
+                            #     (comment.group(0)))
                             if comment.start() == prev_comment.end() + 1:
                                 extracted_comments[len(
                                     extracted_comments) - 1].append(comment)
@@ -626,6 +543,7 @@ class TodoParser(object):
                         end = hunk_lines[1]
                         print("_extract_new_issue: Start Line = ", start)
                         print("_extract_new_issue: End Line = ", end)
+                        print("_extract_new_issue: Attempting to fetch Code Blob...")
                         new_block = GitHubClient._get_code_blob(client,
                                                                 file, start, end, marker, markdown)
                         if new_block:
@@ -647,12 +565,16 @@ class TodoParser(object):
     def _get_line_status(self, comment):
         """Return a Tuple indicating whether this is an addition/deletion/unchanged, plus the cleaned comment."""
         addition_search = self.ADDITION_PATTERN.search(comment)
+
         if addition_search:
+            print("_get_line_status: Detected ADDITION Status!")
             return LineStatus.ADDED, addition_search.group(0)
         else:
             deletion_search = self.DELETION_PATTERN.search(comment)
             if deletion_search:
+                print("_get_line_status: Detected DELETION Status!")
                 return LineStatus.DELETED, deletion_search.group(0)
+        print("_get_line_status: Detected UNCHANGED Status!")
         return LineStatus.UNCHANGED, comment[1:]
 
     @staticmethod
@@ -677,20 +599,20 @@ class TodoParser(object):
         exp = 'TODO|BUG|QUESTION|DOCUMENTATION|ENHANCEMENT'
         title = None
         ref = None
-        print(
-            "Issue Parser->get_title: Searching for Term in Title with Pattern Provided...")
-        print("Issue Parser->get_title: Search Subject = %s" % (comment))
+       # print(
+       #     "Issue Parser->get_title: Searching for Term in Title with Pattern Provided...")
+       # print("Issue Parser->get_title: Search Subject = %s" % (comment))
         title_search = search(exp, comment)
         if title_search:
-            print("Issue Parser->get_title: Found Match in %s" % (comment))
+           # print("Issue Parser->get_title: Found Match in %s" % (comment))
             matchedTerm = title_search.group(0).strip()
             title = comment.strip(matchedTerm)
             title = title.strip()
-            print("Issue Parser->get_title: Issue Title = ", title)
+           # print("Issue Parser->get_title: Issue Title = ", title)
         # Have NOT adjusted this to work properly; supposed to identify assigned individuals in TODO(ind) fmt but cannot be bothered...
         else:
-            print(
-                "Issue Parser->get_title: Did not find Term in title! Initiating secondary search...")
+           # print(
+           #     "Issue Parser->get_title: Did not find Term in title! Initiating secondary search...")
             #title_ref_pattern = re.compile(r'(?<=' + self.identifier + r'\().+')
             title_ref_pattern = re.compile(
                 r'(?:TODO|BUG|QUESTION|DOCUMENTATION|ENHANCEMENT)\(.+')
@@ -797,13 +719,14 @@ if __name__ == "__main__":
                                                similar_issues[1].status == LineStatus.DELETED) or
                                               (similar_issues[1].status == LineStatus.ADDED and
                                                similar_issues[0].status == LineStatus.DELETED))):
-                print(f'Issue "{values[0]}" appears as both addition and deletion. '
+                print(f'_main: Issue "{values[0]}" appears as both addition and deletion. '
                       f'Assuming this issue has been moved so skipping.')
                 continue
             issues_to_process.extend(similar_issues)
         # Cycle through the Issue objects and create or close a corresponding GitHub issue for each.
         for j, raw_issue in enumerate(issues_to_process):
-            print(f'Processing issue {j + 1} of {len(issues_to_process)}')
+            print(
+                f'_main: Processing issue {j + 1} of {len(issues_to_process)}')
             if raw_issue.status == LineStatus.ADDED:
                 status_code = client.create_issue(raw_issue)
                 if status_code == 201:
@@ -811,7 +734,7 @@ if __name__ == "__main__":
                 else:
                     print('main: Issue could not be created')
             elif raw_issue.status == LineStatus.DELETED and os.getenv('INPUT_CLOSE_ISSUES', 'true') == 'true':
-                print('main: Attempting to close issue = ', raw_issue.title)
+                print('main: Attempting to close issue = ', raw_issue.number)
                 status_code = client.close_issue(raw_issue)
                 if status_code == 201:
                     print('main: Issue closed')
