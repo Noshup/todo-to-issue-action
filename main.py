@@ -282,13 +282,17 @@ class TodoParser(object):
         labels = os.getenv('INPUT_ISSUE_IDENTIFIERS')
 
         print("TodoParser : _init -> Labels Loaded from Environment Variable ISSUE_IDENTIFIERS = ", labels)
-        labelsTokenized = labels.split('|')
-        print("TodoParser : _init -> Labels Split into Terms = ", labelsTokenized)
 
-        self.identifier_expression = labels
+        if labels:
+            labels_tokenized = labels.split('|')
+            self.identifier = labels_tokenized
+            self.identifier_expression = labels
+        else:
+            self.identifier = ['TODO']
+            self.identifier_expression = 'TODO'
 
-        self.identifier = ['TODO', 'BUG', 'QUESTION',
-                           'DOCUMENTATION', 'ENHANCEMENT']
+       # self.identifier = ['TODO', 'BUG', 'QUESTION',
+       #                    'DOCUMENTATION', 'ENHANCEMENT']
         self.languages_dict = None
 
         # Load the languages data for ascertaining file types.
