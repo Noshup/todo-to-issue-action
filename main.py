@@ -278,7 +278,6 @@ class TodoParser(object):
     ORG_PROJECTS_PATTERN = re.compile(r'(?<=org projects:\s).+')
 
     def __init__(self):
-        # We could support more identifiers later quite easily.
         labels = os.getenv('INPUT_ISSUE_IDENTIFIERS')
 
         print("TodoParser : _init -> Labels Loaded from Environment Variable ISSUE_IDENTIFIERS = ", labels)
@@ -291,8 +290,6 @@ class TodoParser(object):
             self.identifier = ['TODO']
             self.identifier_expression = 'TODO'
 
-       # self.identifier = ['TODO', 'BUG', 'QUESTION',
-       #                    'DOCUMENTATION', 'ENHANCEMENT']
         self.languages_dict = None
 
         # Load the languages data for ascertaining file types.
