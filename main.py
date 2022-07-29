@@ -332,7 +332,9 @@ class TodoParser(object):
             self.FILE_HUNK_PATTERN, diff_file.read(), re.DOTALL)
         last_end = None
         extracted_file_hunks = []
+        print("parse: Extracting File Hunks to Split Diff into File-Based Sections...")
         for i, file_hunk in enumerate(file_hunks):
+            print("parse: File Hunk Identified: ", file_hunk)
             extracted_file_hunks.append(file_hunk.group(0))
             last_end = file_hunk.end()
         diff_file.seek(0)
@@ -425,9 +427,9 @@ class TodoParser(object):
                         prev_comment = comment
                     for comment in extracted_comments:
                         print("parse: Extracting Issue for Comment = ",
-                              comment, " In File = ", curr_file)
+                              comment, " In File = ", block['file'])
                         issue = self._extract_issue_if_exists(
-                            comment, marker, block, curr_markdown_language, curr_file, client)
+                            comment, marker, block, curr_markdown_language, block['file'], client)
                         if issue:
                             issues.append(issue)
                 else:
@@ -442,9 +444,9 @@ class TodoParser(object):
 
                     for comment in extracted_comments:
                         print("parse: Extracting Issue for Comment = ",
-                              comment, " In File = ", curr_file)
+                              comment, " In File = ", block['file'])
                         issue = self._extract_issue_if_exists(
-                            comment, marker, block, curr_markdown_language, curr_file, client)
+                            comment, marker, block, curr_markdown_language, block['file'], client)
                         if issue:
                             issues.append(issue)
 
