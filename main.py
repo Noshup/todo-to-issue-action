@@ -283,13 +283,16 @@ class TodoParser(object):
                            'DOCUMENTATION', 'ENHANCEMENT']
         self.languages_dict = None
 
-        labels = os.getenv('ISSUE_IDENTIFIERS')
+        labels = os.getenv('INPUT_ISSUE_IDENTIFIERS')
+        labelT = os.getenv('INPUT_LABEL')
 
-        print("TodoParser : _init -> Labels Loaded from Environment = ", labels)
+        print("TodoParser : _init -> Labels Loaded from Environment Variable ISSUE_IDENTIFIERS = ", labels)
+        print(
+            "TodoParser : _init -> Labels Loaded from Environment Variable LABEL = ", labelT)
 
-        labelsTokenized = labels.split('|')
+        #labelsTokenized = labels.split('|')
 
-        print("TodoParser : _init -> Labels Split into Terms = ", labelsTokenized)
+        #print("TodoParser : _init -> Labels Split into Terms = ", labelsTokenized)
 
         # Load the languages data for ascertaining file types.
         languages_url = 'https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml'

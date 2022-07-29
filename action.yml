@@ -32,8 +32,11 @@ inputs:
     description: "The GitHub access token to allow us to retrieve, create and update issues (automatically set)"
     required: false
     default: ${{ github.token }}
+  LABEL:
+    description: "The label that will be used to identify TODO comments (deprecated)"
+    required: false
   ISSUE_IDENTIFIERS:
-    description: "The Tag used to signify that a comment is/to be associated with an issue in Github. Default value is 'TODO', but you can add as many elements to the list as you like, separating each term using the pipe operator. For example: 'TODO|BUG|TESTING'"
+    description: "The Tag used to signify that a comment is/to be associated with an issue in Github. Default value is 'TODO', but you can add as many terms as you like, separating each term using the pipe operator. For example: 'TODO|BUG|TESTING'"
     required: false
     default: "TODO"
   CLOSE_ISSUES:
