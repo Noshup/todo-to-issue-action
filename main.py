@@ -148,8 +148,8 @@ class GitHubClient(object):
             #print("\nSplit String Content: \n", lines_str)
 
             #print("\nTarget Line Numbers = ", start, " -> ", end)
-            start_a = start-1
-            end_a = end+1
+            start_a = start-2
+            end_a = end
             for x in range(start_a, end_a):
                 target_lines.append(lines_str[x])
             #print("\nTarget Lines: ", target_lines)
@@ -521,13 +521,13 @@ class TodoParser(object):
                             start_line += 1
 
                 elif issue:
+
                     # Extract other issue information that may exist.
                     line_labels = self._get_labels(cleaned_line)
                     line_assignees = self._get_assignees(cleaned_line)
                     line_milestone = self._get_milestone(cleaned_line)
                     user_projects = self._get_projects(cleaned_line, 'user')
                     org_projects = self._get_projects(cleaned_line, 'org')
-                    hunk_lines = self._get_hunk_lines(cleaned_line)
                     if line_labels:
                         issue.labels.extend(line_labels)
                     elif line_assignees:
@@ -539,23 +539,26 @@ class TodoParser(object):
                     elif org_projects:
                         issue.org_projects.extend(org_projects)
                     elif hunk_lines:
-                        start = hunk_lines[0]
-                        end = hunk_lines[1]
-                        print("_extract_new_issue: Start Line = ", start)
-                        print("_extract_new_issue: End Line = ", end)
-                        print("_extract_new_issue: Attempting to fetch Code Blob...")
-                        new_block = GitHubClient._get_code_blob(client,
-                                                                file, start, end, marker, markdown)
-                        if new_block:
+                        if line_status == LineStatus.ADDED:
+                            hunk_lines = self._get_hunk_lines(cleaned_line)
+                            start = hunk_lines[0]
+                            end = hunk_lines[1]
+                            print("_extract_new_issue: Start Line = ", start)
+                            print("_extract_new_issue: End Line = ", end)
                             print(
-                                "_extract_issue: Adding new Block Details to Issue Object...")
-                            issue.hunk = new_block['hunk']
-                            issue.file_name = new_block['file']
-                            issue.start_line = new_block['start_line']
-                            issue.markdown_language = new_block['markdown_language']
-                        else:
-                            print(
-                                "_extract_issue: Failed to retrieve new Block!")
+                                "_extract_new_issue: Attempting to fetch Code Blob...")
+                            new_block = GitHubClient._get_code_blob(client,
+                                                                    file, start, end, marker, markdown)
+                            if new_block:
+                                print(
+                                    "_extract_issue: Adding new Block Details to Issue Object...")
+                                issue.hunk = new_block['hunk']
+                                issue.file_name = new_block['file']
+                                issue.start_line = new_block['start_line']
+                                issue.markdown_language = new_block['markdown_language']
+                            else:
+                                print(
+                                    "_extract_issue: Failed to retrieve new Block!")
 
                     elif len(cleaned_line):
                         issue.body.append(cleaned_line)
@@ -734,7 +737,7 @@ if __name__ == "__main__":
                 else:
                     print('main: Issue could not be created')
             elif raw_issue.status == LineStatus.DELETED and os.getenv('INPUT_CLOSE_ISSUES', 'true') == 'true':
-                print('main: Attempting to close issue = ', raw_issue.number)
+                print('main: Attempting to close issue = ', raw_issue.title)
                 status_code = client.close_issue(raw_issue)
                 if status_code == 201:
                     print('main: Issue closed')
