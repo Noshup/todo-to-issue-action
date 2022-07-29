@@ -148,8 +148,8 @@ class GitHubClient(object):
             #print("\nSplit String Content: \n", lines_str)
 
             #print("\nTarget Line Numbers = ", start, " -> ", end)
-            start_a = start-2
-            end_a = end
+            start_a = start-1
+            end_a = end+1
             for x in range(start_a, end_a):
                 target_lines.append(lines_str[x])
             #print("\nTarget Lines: ", target_lines)
@@ -424,6 +424,8 @@ class TodoParser(object):
                                     extracted_comments) - 1].append(comment)
                         prev_comment = comment
                     for comment in extracted_comments:
+                        print("parse: Extracting Issue for Comment = ",
+                              comment, " In File = ", curr_file)
                         issue = self._extract_issue_if_exists(
                             comment, marker, block, curr_markdown_language, curr_file, client)
                         if issue:
@@ -439,6 +441,8 @@ class TodoParser(object):
                             extracted_comments.append([comment])
 
                     for comment in extracted_comments:
+                        print("parse: Extracting Issue for Comment = ",
+                              comment, " In File = ", curr_file)
                         issue = self._extract_issue_if_exists(
                             comment, marker, block, curr_markdown_language, curr_file, client)
                         if issue:
@@ -482,6 +486,7 @@ class TodoParser(object):
     def _extract_issue_if_exists(self, comment, marker, code_block, markdown, file, client):
         """Check this comment for Tags, and if found, build an Issue object."""
         issue = None
+        print("_extract_if_issue_exists: Extracting Issue in File = ", file)
         for match in comment:
             lines = match.group().split('\n')
             for line in lines:
@@ -521,7 +526,8 @@ class TodoParser(object):
                             start_line += 1
 
                 elif issue:
-
+                    print("_extract_if_issue_exists: Comment = ",
+                          comment, " File = ", file)
                     # Extract other issue information that may exist.
                     line_labels = self._get_labels(cleaned_line)
                     line_assignees = self._get_assignees(cleaned_line)
@@ -543,22 +549,22 @@ class TodoParser(object):
                         if line_status == LineStatus.ADDED:
                             start = hunk_lines[0]
                             end = hunk_lines[1]
-                            print("_extract_new_issue: Start Line = ", start)
-                            print("_extract_new_issue: End Line = ", end)
+                            print("_extract_if_issue_exists: Start Line = ", start)
+                            print("_extract_if_issue_exists: End Line = ", end)
                             print(
-                                "_extract_new_issue: Attempting to fetch Code Blob...")
+                                "_extract_if_issue_exists: Attempting to fetch Code Blob...")
                             new_block = GitHubClient._get_code_blob(client,
                                                                     file, start, end, marker, markdown)
                             if new_block:
                                 print(
-                                    "_extract_issue: Adding new Block Details to Issue Object...")
+                                    "_extract_if_issue_exists: Adding new Block Details to Issue Object...")
                                 issue.hunk = new_block['hunk']
                                 issue.file_name = new_block['file']
                                 issue.start_line = new_block['start_line']
                                 issue.markdown_language = new_block['markdown_language']
                             else:
                                 print(
-                                    "_extract_issue: Failed to retrieve new Block!")
+                                    "_extract_if_issue_exists: Failed to retrieve new Block!")
 
                     elif len(cleaned_line):
                         issue.body.append(cleaned_line)
