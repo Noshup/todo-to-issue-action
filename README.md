@@ -1,6 +1,15 @@
-# TODO to Issue Action
+# Comment to Issue Action
 
-This action will convert newly committed TODO comments to GitHub issues on push. It will also optionally close the issues if the TODOs are removed in a future commit. Works with almost any programming language.
+### ATTENTION: This is a Fork of alstr's [todo-to-issue-action](https://github.com/alstr/todo-to-issue-action)! This implementation would not have been possible without their hard work. I have simply extended its functionality a little bit.
+
+This action will convert newly committed comments to GitHub issues on push. It will also optionally close the issues if the TODOs are removed in a future commit. Works with almost any programming language.
+
+As stated above, this action is a modified version of the Todo-To-Issue-Action. The following features have been added/changed:
+
+- Workflow inputs 'LABEL', 'PROJECT_SECRET', 'USER_PROJECTS' have been removed and manual project association logic has been deleted from the action entirely as the new GitHub projects' Beta is incompatible with that implementation, and 'LABEL' is being replaced by 'ISSUE_IDENTIFIERS'.
+- Using the workflow input 'ISSUE_IDENTIFIERS', you can select which terms will be used to determine whether a comment in your code will be extracted as an Issue. By default, 'TODO' is the only term which is matched with lines in your commits' difference files. The input param is of type String, and should be structured like so: 'TERM|TERMB|TERMC|TERMD'. Do not add the pipe operator if you only have one term.
+- Issues are not automatically created with the TODO label attached anymore. The identifying term has no bearing on the issue labeling, so you will want to make sure you use the labels property in your multiline comments.
+- An additional Github API service has been added. This supports custom code snippets attached to your generated issues. The previous implementation only supported code snippets which were taken from the difference file, which could be somewhat limiting. Now, you can specify which lines of code the snippet should cover (if not specified, defaults back to diff-based snippet) and the API service will query GitHub for the source code file in which the comment is located, then parse the content to match the indicated line numbers. This means the GitHub token you provide should have API permissions!
 
 ## Usage
 
@@ -21,6 +30,7 @@ Multiline TODOs are supported, with additional lines inserted into the issue bod
         #  labels: enhancement, help wanted
         #  assignees: alstr, bouteillerAlan, hbjydev
         #  milestone: 1
+        #  lines: 25,55
         print('Hello world!')
 ```
 
@@ -36,8 +46,8 @@ Create a `workflow.yml` file in your `.github/workflows` directory like:
         runs-on: "ubuntu-latest"
         steps:
           - uses: "actions/checkout@master"
-          - name: "TODO to Issue"
-            uses: "alstr/todo-to-issue-action@v4.6.7"
+          - name: "Comment to Issue"
+            uses: "Noshup/todo-to-issue-action@master"
             id: "todo"
 ```
 
@@ -48,6 +58,7 @@ The workflow file takes the following optional inputs:
 | Input            | Required | Description                                                                                                                                                                                                  |
 |------------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `TOKEN`          | No | The GitHub access token to allow us to retrieve, create and update issues for your repo. Default: `${{ github.token }}`.                                                                                     |
+| `ISSUE_IDENTIFIERS` | No | The Tag used to signify that a comment is/to be associated with an issue in Github. Default value is 'TODO', but you can add as many terms as you like, separating each term using the pipe operator. For example: 'TODO|BUG|TESTING' |
 | `CLOSE_ISSUES`   | No | Optional boolean input that specifies whether to attempt to close an issue when a TODO is removed. Default: `true`.                                                                                          |
 | `AUTO_P`         | No | Optional boolean input that specifies whether to format each line in multiline TODOs as a new paragraph. Default: `true`.                                                                                    |
 | `IGNORE`         | No | Optional string input that provides comma-delimited regular expressions that match files in the repo that we should not scan for TODOs. By default, we will scan all files.                                  |
@@ -108,11 +119,11 @@ There are additional inputs if you want to be able to assign issues to projects.
 * Vue
 * YAML
 
-New languages can easily be added to the `syntax.json` file used by the action to identify TODO comments. When adding languages, follow the structure of existing entries, and use the language name defined by GitHub in [`languages.yml`](https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml). PRs adding new languages are welcome and appreciated. Please add a test for your language in order for your PR to be accepted. 
+New languages can easily be added to the `syntax.json` file used by the action to identify tagged comments. When adding languages, follow the structure of existing entries, and use the language name defined by GitHub in [`languages.yml`](https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml). PRs adding new languages are welcome and appreciated. Please add a test for your language in order for your PR to be accepted. 
 
-## TODO Options
+## Comment Options
 
-Unless specified otherwise, options should be on their own line, below the initial TODO declaration.
+Unless specified otherwise, options should be on their own line, below the initial TODO (or other identifying) declaration.
 
 ### `assignees:`
 
@@ -120,48 +131,15 @@ Comma-separated list of usernames to assign to the issue.
 
 ### `labels:`
 
-Comma-separated list of labels to add to the issue. If any of the labels do not already exist, they will be created. The `todo` label is automatically added to issues to help the action efficiently retrieve them in the future.
+Comma-separated list of labels to add to the issue. If any of the labels do not already exist, they will be created. The `todo` label is no longer automatically added to issues; you must instead add this label yourself.
 
 ### `milestone:`
 
 Milestone ID to assign to the issue. Only a single milestone can be specified and this must already have been created.
 
-### Other Options
+### `lines:`
 
-#### Reference
-
-As per the [Google Style Guide](https://google.github.io/styleguide/cppguide.html#TODO_Comments), you can provide a reference after the TODO label. This will be included in the issue title for searchability.
-
-```python
-    def hello_world():
-        # TODO(alstr) Come up with a more imaginative greeting
-        print('Hello world!')
-```
-
-Don't include parentheses within the identifier itself.
-
-#### Projects
-
-You can assign the created issue to columns within user or organisation projects with some additional setup.
-
-The action cannot access your projects by default. To enable access, you must [create an encrypted secret in your repo settings](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository), with the value set to a valid Personal Access Token. Then, assign the secret in the workflow file like `PROJECTS_SECRET: ${{ secrets.PROJECTS_SECRET }}`. Do not enter the raw secret.
-
-To assign to a user project, use the `user projects:` prefix. To assign to an organisation project, use `org projects:` prefix.
-
-The syntax is `<user or org name>/project name/column name`. All three must be provided.
-
-```python
-    def hello_world():
-        # TODO Come up with a more imaginative greeting
-        #  Everyone uses hello world and it's boring.
-        #  user projects: alstr/Test User Project/To Do
-        #  org projects: alstrorg/Test Org Project/To Do
-        print('Hello world!')
-```
-
-You can assign to multiple projects by using commas, for example: `user projects: alstr/Test User Project 1/To Do, alstr/Test User Project 2/Tasks`.
-
-You can also specify default projects in the same way by defining `USER_PROJECTS` or `ORG_PROJECTS` in your workflow file. These will be applied automatically to every issue, but will be overrode by any specified within the TODO.
+Line Numbers to specify the exact contents of the Code Snippet which will be attached to the Issue in GitHub. These should be comma-separated with no spaces, e.g. `lines: 16,98` and will be used on the same source file in which the comment exists. If you omit this property, the action will instead follow the same routine as alstr's original version; the snippet will be created using the difference file. 
 
 ## Troubleshooting
 
@@ -200,8 +178,6 @@ If you want to fork this action to customise its behaviour, there are a few step
 
 The action was developed for the GitHub Hackathon. Whilst every effort is made to ensure it works, it comes with no guarantee.
 
-Thanks to Jacob Tomlinson for [his handy overview of GitHub Actions](https://www.jacobtomlinson.co.uk/posts/2019/creating-github-actions-in-python/).
+Thanks to all those who have [contributed](https://github.com/alstr/todo-to-issue-action/graphs/contributors) to the further development of this action's source repo.
 
-Thanks to GitHub's [linguist repo](https://github.com/github/linguist/) for the [`languages.yml`](https://raw.githubusercontent.com/github/linguist/master/lib/linguist/languages.yml) file used by the app to look up file extensions and determine the correct highlighting to apply to code snippets.
-
-Thanks to all those who have [contributed](https://github.com/alstr/todo-to-issue-action/graphs/contributors) to the further development of this action.
+Thanks to the original author of this repository [alstr](https://github.com/alstr), your work has saved me a significant amount of time here!
