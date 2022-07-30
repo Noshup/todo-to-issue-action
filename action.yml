@@ -1,12 +1,12 @@
-name: "TODO to Issue"
-description: "Converts IDE TODO comments to GitHub issues"
+name: "Comment to Issue"
+description: "Converts IDE TODO/BUG/etc comments to GitHub issues"
 author: "Sean Sherman"
 runs:
   using: "docker"
   image: "Dockerfile"
 branding:
-  icon: "check-square"
-  color: "orange"
+  icon: "arrow-up-circle"
+  color: "green"
 inputs:
   REPO:
     description: "The path to the repository where the action will be used, e.g. 'alstr/my-repo' (automatically set)"
