@@ -129,8 +129,11 @@ class GitHubClient(object):
         target_lines = []
         target_string = ""
         block = None
-        file_blob_request = requests.get(file_url, headers=self.issue_headers)
+        file_blob_request = requests.get(
+            file_url, headers=self.issue_headers, params=self.branch_name)
         if file_blob_request.status_code == 200:
+            print("GitHubClient->_get_code_blob : Ref Used = ",
+                  file_blob_request.json["_links"]["self"])
             file = file_blob_request.text
             file_json = json.loads(file)
             file_content = file_json["content"]
