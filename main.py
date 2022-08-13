@@ -132,8 +132,10 @@ class GitHubClient(object):
         file_blob_request = requests.get(
             file_url, headers=self.issue_headers, params=self.branch_name)
         if file_blob_request.status_code == 200:
-            print("GitHubClient->_get_code_blob : Response = ",
-                  file_blob_request.json)
+            print("GitHubClient->_get_code_blob : Response Headers = ",
+                  file_blob_request.headers)
+            print("GitHubClient->_get_code_blob : Response Content = ",
+                  file_blob_request.text)
             file = file_blob_request.text
             file_json = json.loads(file)
             file_content = file_json["content"]
