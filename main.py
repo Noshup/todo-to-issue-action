@@ -68,6 +68,8 @@ class GitHubClient(object):
               str(len(self.existing_issues)))
         self.auto_assign = os.getenv('INPUT_AUTO_ASSIGN', 'false') == 'true'
         self.actor = os.getenv('INPUT_ACTOR')
+        self.branch_name = os.getenv('INPUT_BRANCH_NAME')
+        print("GITHUB CLIENT -> init: Branch Name = ", self.branch_name)
 
     def get_timestamp(self, commit):
         return commit.get('timestamp')
@@ -94,8 +96,6 @@ class GitHubClient(object):
         }
         diff_request = requests.get(url=diff_url, headers=diff_headers)
         if diff_request.status_code == 200:
-            print("GitHubClient->get_last_diff: ", diff_request.headers)
-            print("GitHubClient->get_last_diff: ", diff_request.json)
             return diff_request.text
         raise Exception('Could not retrieve diff. Operation will abort.')
 

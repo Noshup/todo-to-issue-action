@@ -24,6 +24,10 @@ inputs:
     description: "The URL to use to get the diff (automatically set)"
     required: true
     default: "${{ github.event.pull_request.diff_url }}"
+  BRANCH_NAME:
+    description: "The Name of the Branch for this GitHub Actions Event"
+    required: true
+    default: "${{ github.ref_name}}"
   SHA:
     description: "The SHA of the latest commit (automatically set)"
     required: true
