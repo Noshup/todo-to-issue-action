@@ -118,7 +118,7 @@ class GitHubClient(object):
               list_issues_request.status_code, " With Total Issues = ", str(len(self.existing_issues)))
 
     def _get_code_blob(self, file_path, start, end, curr_markers, curr_markdown_language):
-        file_url = f'{self.repos_url}{self.repo}/contents/{file_path}'
+        file_url = f'{self.repos_url}{self.repo}/contents/{file_path}?ref={self.branch_name}'
         print("_get_code_blob: Attempting to Fetch Code For File = ", file_url)
         file = None
         file_json = None
@@ -129,11 +129,8 @@ class GitHubClient(object):
         target_lines = []
         target_string = ""
         block = None
-        file_blob_request = requests.get(
-            file_url, headers=self.issue_headers, params=self.branch_name)
+        file_blob_request = requests.get(file_url, headers=self.issue_headers)
         if file_blob_request.status_code == 200:
-            print("GitHubClient->_get_code_blob : Response Headers = ",
-                  file_blob_request.headers)
             print("GitHubClient->_get_code_blob : Response Content = ",
                   file_blob_request.text)
             file = file_blob_request.text
