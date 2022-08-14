@@ -142,7 +142,7 @@ class GitHubClient(object):
             lines_str = str_content.split(b'\n')
 
             start_a = start-1
-            end_a = end+1
+            end_a = end
             for x in range(start_a, end_a):
                 target_lines.append(lines_str[x])
 
